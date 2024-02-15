@@ -28,7 +28,19 @@ def controller(model, data):
     # desired obstacle to be tracked
     obst_des = 1
     data.qfrc_applied[obst_des] = 0.1
-
+    
+    # PD control
+    x = np.array([data.qpos[1], data.qvel[1]])
+    K = np.array([0.01, 0.1])
+    u = 0.25 + K.dot(x)
+    
+    if data.qpos[0] < np.pi/2:
+        data.ctrl[0] = u
+    else:
+        data.ctrl[0] = 0
+    
+    
+    
 
 def keyboard(window, key, scancode, act, mods):
     if act == glfw.PRESS and key == glfw.KEY_BACKSPACE:
@@ -200,7 +212,8 @@ def detect_and_draw_bound(camera_name, loc_x, loc_y, width=640, height=480):
     # filename = os.path.join(dirname, 'test_hsvframe.png')
     # cv2.imwrite(filename, cv2.flip(hsv_frame, -1))
 
-    # Define range for color in HSV
+    # Define range for color in HSV (link helps define range of values for colors)
+    # https://stackoverflow.com/questions/47483951/how-can-i-define-a-threshold-value-to-detect-only-green-colour-objects-in-an-ima/47483966#47483966
     lower_color = np.array([20, 0, 0])  # yellow lower
     upper_color = np.array([35, 255, 255])  # yellow upper
 
