@@ -1,0 +1,20 @@
+<mujoco>
+  <option gravity = "0 0 -9.81" />
+   <worldbody>
+      <light diffuse="0.5 0.5 0.5" pos="0 0 5" dir="0 0 -1"/>
+			<geom type="plane" size="10 2 0.1" rgba=".9 0 0 1"/>
+      <body pos="0 0 0.1" euler="0 0 0">
+				<joint name='cart_x' type='slide' axis='1 0 0' pos = '0 0 0'/>
+				<geom type="box" size=".5 .2 .1" rgba="1 1 0.1 1" mass="10"/>
+		    <body pos="0 -0.25 0.5" euler="0 0 0">
+		      <joint name="pend_joint" type="hinge" axis = "0 -1 0" pos = "0 0 -0.5"/>
+		      <geom type="cylinder" size="0.025 0.5" rgba="0 1 0 1" mass="1"/>
+          <camera name="robot_camera" pos="0 0 1" zaxis="0 0 1"/>
+				</body>
+      </body>
+    </worldbody>
+		<actuator>
+      <motor name="force" joint="cart_x"  gear="1" />
+      <motor name="torque1" joint="pend_joint"  gear="1" />
+    </actuator>
+</mujoco>
