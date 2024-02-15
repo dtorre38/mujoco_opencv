@@ -21,23 +21,13 @@ lasty = 0
 
 
 def init_controller(model,data):
-    #initialize the controller here. This function is called once, in the beginning
     pass
 
 
 def controller(model, data):
-    #put the controller here. This function is called inside the simulation.
-    pass
-    # K = 100
-
-    # x_des = np.array([0, 0])
-
-    # #1. apply congtrol u = -K*x
-    # x = np.array([data.qpos[0],data.qvel[0]])
-    # u = -K.dot(x)
-    # data.ctrl[0] = u
-    
-    # data.qfrc_applied[0] = force_robot
+    # desired obstacle to be tracked
+    obst_des = 1
+    data.qfrc_applied[obst_des] = 0.1
 
 
 def keyboard(window, key, scancode, act, mods):
@@ -195,65 +185,55 @@ def detect_and_draw_bound(camera_name, loc_x, loc_y, width=640, height=480):
     
     # Reshape mujoco frame to 3D array for opencv input
     frame_reshaped = frame.reshape((height, width, 3))
-    
-    dirname = os.path.dirname(__file__)
-    filename = os.path.join(dirname, 'test.png')
-    cv2.imwrite(filename, frame_reshaped)
-    d
 
-    # OpenCV expects the color channels in BGR format, so if the image is in RGB format, convert it to BGR.
+    # if the image is in RGB format, convert it to BGR.
     frame_bgr = cv2.cvtColor(frame_reshaped, cv2.COLOR_RGB2BGR)
+    
+    # dirname = os.path.dirname(__file__)
+    # filename = os.path.join(dirname, 'test_bgr.png')
+    # cv2.imwrite(filename, cv2.flip(frame_bgr, -1))
 
-    # Now, you can convert the frame to HSV or process it with OpenCV as needed.
+    # Convert frame to HSV (Hue, Saturation, Value) color space for easier color detection
     hsv_frame = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2HSV)
     
-    # Convert frame to HSV (Hue, Saturation, Value) color space for easier color detection
-    # hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    # dirname = os.path.dirname(__file__)
+    # filename = os.path.join(dirname, 'test_hsvframe.png')
+    # cv2.imwrite(filename, cv2.flip(hsv_frame, -1))
 
-    # Define range for yellow color in HSV
-    lower_yellow = np.array([20, 100, 100])
-    upper_yellow = np.array([30, 255, 255])
+    # Define range for color in HSV
+    lower_color = np.array([20, 0, 0])  # yellow lower
+    upper_color = np.array([35, 255, 255])  # yellow upper
 
-    # Create a mask for detecting yellow objects in the frame
-    yellow_mask = cv2.inRange(hsv_frame, lower_yellow, upper_yellow)
+    # Create a mask for detecting color objects in the frame
+    color_mask = cv2.inRange(hsv_frame, lower_color, upper_color)
 
     # Find contours in the mask
-    contours, _ = cv2.findContours(yellow_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(color_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     for contour in contours:
-        # Optionally, filter out small contours that may be noise
+        # Filter out small contours that may be noise
         if cv2.contourArea(contour) > 500:
             # Get bounding box for each yellow object
             x, y, w, h = cv2.boundingRect(contour)
+            # print(x, y, w, h)
 
             # Draw a green bounding box around the yellow object
-            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+            cv2.rectangle(frame_bgr, (x, y), (x+w, y+h), (0, 255, 0), 2)
+            
+            dirname = os.path.dirname(__file__)
+            # filename = os.path.join(dirname, 'test_rgb_filtered.png')
+            # cv2.imwrite(filename, cv2.flip(frame_bgr, -1))
 
     # Assuming `frame` is the modified frame with bounding boxes, in BGR format, and of shape (height, width, 3)
-    # Convert the frame from BGR to RGB if necessary (depending on what mjr_drawPixels expects)
-    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    # Convert frame from BGR to RGB
+    frame_bdbox = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
     
-    dirname = os.path.dirname(__file__)
-    filename = os.path.join(dirname, 'test.png')
-    cv2.imwrite(filename, hsv_frame)
-    d
-    
-    # Window name in which image is displayed 
-    # window_name = 'opencv'
-    
-    # Using cv2.imshow() method 
-    # Displaying the image 
-    # cv2.imshow(window_name, frame_rgb) 
-    
-    # # waits for user to press any key 
-    # # (this is necessary to avoid Python kernel form crashing) 
-    # cv2.waitKey(10000) 
-    
-    # # closing all open windows 
-    # cv2.destroyAllWindows()
+    # dirname = os.path.dirname(__file__)
+    # filename = os.path.join(dirname, 'test_filtered.png')
+    # cv2.imwrite(filename, cv2.flip(frame_bdbox, -1))
 
     # Flatten the frame to match MuJoCo's expected input format (height*width*3, 1)
-    frame_boundbox = frame_rgb.flatten()
+    frame_boundbox = frame_bdbox.flatten()
     
     # 5. Call mjr_drawPixels using the rectangular viewport you created in step 1.
     mj.mjr_drawPixels(frame_boundbox, None, offscreen_viewport, offscreen_context)
@@ -306,9 +286,6 @@ while not glfw.window_should_close(window):
     time_prev = data.time
 
     while (data.time - time_prev < 1.0/60.0):
-        obst_des = 1
-        data.qfrc_applied[obst_des] = 0.1
-        
         mj.mj_step(model, data)
 
     if (data.time>=simend):
@@ -328,13 +305,6 @@ while not glfw.window_should_close(window):
     mj.mjv_updateScene(model, data, opt, None, cam,
                        mj.mjtCatBit.mjCAT_ALL.value, scene)
     mj.mjr_render(viewport, scene, context)
-    
-    # Example usage
-    # frame = capture_frame_from_mujoco()  # This function should capture a frame from your MuJoCo simulation
-    # processed_frame = detect_and_draw_yellow_objects(frame)
-    # cv2.imshow('Processed Frame', processed_frame)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
     
     # set second screen on upper right
     width = 640

@@ -6,7 +6,7 @@
       <body pos="0 0 0.5" euler="0 0 0">
         <joint name="pend_joint" type="hinge" axis = "0 0 1" pos = "0 0 -0.5"/>
 				<geom type="box" size=".5 .5 .5" rgba="1 1 1 1" mass="10"/>
-        <camera name="robot_camera" mode="targetbody" target="obstacle1" pos="0.5 0 1" euler="0 0 0"/>
+        <camera name="robot_camera" mode="targetbody" target="obstacle1" pos="0.5 0 0.5" euler="0 0 0"/>
       </body>
       <body name='obstacle1' pos="3 0 0.5" euler="0 0 0">
 				<joint name='joint1' type='slide' axis='0 1 0' pos = '0 0 0'/>
