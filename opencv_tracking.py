@@ -6,10 +6,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-xml_path = 'box.xml' #xml file (assumes this is in the same folder as this file)
-simend = 100 #simulation time
-print_camera_config = 0 #set to 1 to print camera config
-                        #this is useful for initializing view of the model)
+xml_path = 'box.xml'  # xml file (assumes this is in the same folder as this file)
+simend = 100  # simulation time
+print_camera_config = 0  # set to 1 to print camera config
+                         # this is useful for initializing view of the model)
+debug_opencv = 0  # set to 1 for saving opencv images for debugging purposes
 
 # For callback functions
 button_left = False
@@ -18,15 +19,18 @@ button_right = False
 lastx = 0
 lasty = 0
 
-# for tracking bounding box
-# x_bd_center, y_bd_center, w_bd_box, h_bd_box = 0.0, 0.0, 0.0, 0.0
+# inset screen width and height
+frame_width = 640
+frame_height = 480
+dx = 0  # frame center xpos - bounding box center xpos
+dy = 0  # frame center ypos - bounding box center ypos
 
 
-def init_controller(model,data):
+def init_controller(model, data):
     pass
 
 
-def controller(model, data): 
+def controller(model, data):
     # move desired obstacle to be tracked
     obst_des = 1
     data.qfrc_applied[obst_des] = 0.1
@@ -38,6 +42,10 @@ def controller(model, data):
     #     data.ctrl[0] = u
     # else:
     #     data.ctrl[0] = 0
+        
+    # pd controller to track object
+    K = 0.1
+    data.ctrl[0] = K*dx
     
     
 def keyboard(window, key, scancode, act, mods):
@@ -114,7 +122,7 @@ def scroll(window, xoffset, yoffset):
                       yoffset, scene, cam)
 
 
-def render_insetscreen(camera_name, loc_x, loc_y, width=640, height=480):
+def get_frame(camera_name, loc_x, loc_y, width=640, height=480):
     # Bottom Placement
     # bottom left: loc_x = 0, loc_y = 0
     # bottom middle: loc_x = 0.5*(viewport_width - width), loc_y = 0
@@ -127,49 +135,6 @@ def render_insetscreen(camera_name, loc_x, loc_y, width=640, height=480):
     # top left: loc_x = 0, loc_y = viewport_height - height
     # top middle: loc_x = 0.5*(viewport_width - width), loc_y = viewport_height - height
     # top right: loc_x = viewport_width - width, loc_y = viewport_height - height
-    
-    # Adding an inset window from a different perspective
-    # https://github.com/google-deepmind/mujoco/issues/744#issuecomment-1442221178
-    # 1. Create a rectangular viewport in the upper right corner for example.
-    offscreen_viewport = mj.MjrRect(int(loc_x), int(loc_y), width, height)
-    offscreen_context = mj.MjrContext(model, mj.mjtFontScale.mjFONTSCALE_100.value)
-    
-    # 2. Specify a different camera view by updating the scene with mjv_updateScene.
-    # Set the camera to the specified view
-    camera_id = mj.mj_name2id(model, mj.mjtObj.mjOBJ_CAMERA, camera_name)
-    offscreen_cam = mj.MjvCamera()
-    offscreen_cam.type = mj.mjtCamera.mjCAMERA_FIXED
-    offscreen_cam.fixedcamid = camera_id
-
-    # Update scene for the off-screen camera
-    mj.mjv_updateScene(model, data, opt, None, offscreen_cam, mj.mjtCatBit.mjCAT_ALL.value, scene)
-    
-    # 3.Render the scene in the offscreen buffer with mjr_render.
-    pixels = np.zeros((height*width*3, 1), dtype=np.uint8)  # Placeholder for pixel data
-    mj.mjr_render(offscreen_viewport, scene, offscreen_context)
-    
-    # 4. Read the pixels with mjr_readPixels.
-    mj.mjr_readPixels(pixels, None, offscreen_viewport, offscreen_context)
-    
-    # 5. Call mjr_drawPixels using the rectangular viewport you created in step 1.
-    mj.mjr_drawPixels(pixels, None, offscreen_viewport, offscreen_context)
-
-
-# Assuming `frame` is a captured image from the MuJoCo simulation
-def detect_and_draw_bound(camera_name, loc_x, loc_y, width=640, height=480):
-    # Bottom Placement
-    # bottom left: loc_x = 0, loc_y = 0
-    # bottom middle: loc_x = 0.5*(viewport_width - width), loc_y = 0
-    # bottom right: loc_x = viewport_width - width, loc_y = 0
-    # Middle Placement
-    # middle left: loc_x = 0, loc_y = 0.5*(viewport_width - width)
-    # middle: loc_x = 0.5*(viewport_width - width), loc_y = 0.5*(viewport_width - width)
-    # middle right: loc_x = viewport_width - width, loc_y = 0.5*(viewport_width - width)
-    # Top Placement
-    # top left: loc_x = 0, loc_y = viewport_height - height
-    # top middle: loc_x = 0.5*(viewport_width - width), loc_y = viewport_height - height
-    # top right: loc_x = viewport_width - width, loc_y = viewport_height - height
-    # global x_bd_center, y_bd_center, w_bd_box, h_bd_box
     
     # Adding an inset window from a different perspective
     # https://github.com/google-deepmind/mujoco/issues/744#issuecomment-1442221178
@@ -194,22 +159,23 @@ def detect_and_draw_bound(camera_name, loc_x, loc_y, width=640, height=480):
     # 4. Read the pixels with mjr_readPixels.
     mj.mjr_readPixels(frame, None, offscreen_viewport, offscreen_context)
     
-    # Reshape mujoco frame to 3D array for opencv input
+    # 5. Call mjr_drawPixels using the rectangular viewport you created in step 1.
+    # mj.mjr_drawPixels(frame, None, offscreen_viewport, offscreen_context)
+    
+    return frame, offscreen_viewport, offscreen_context
+
+
+def detect_and_draw_bound(frame, width=640, height=480):
+    global dx, dy
+    
+    # Reshape mujoco frame [height x width, 1] to 3D array for opencv input [height, width, 3]
     frame_reshaped = frame.reshape((height, width, 3))
 
-    # if the image is in RGB format, convert it to BGR.
+    # convert frame to BGR
     frame_bgr = cv2.cvtColor(frame_reshaped, cv2.COLOR_RGB2BGR)
-    
-    # dirname = os.path.dirname(__file__)
-    # filename = os.path.join(dirname, 'test_bgr.png')
-    # cv2.imwrite(filename, cv2.flip(frame_bgr, -1))
 
     # Convert frame to HSV (Hue, Saturation, Value) color space for easier color detection
     hsv_frame = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2HSV)
-    
-    # dirname = os.path.dirname(__file__)
-    # filename = os.path.join(dirname, 'test_hsvframe.png')
-    # cv2.imwrite(filename, cv2.flip(hsv_frame, -1))
 
     # Define range for color in HSV (link helps define range of values for colors)
     # https://stackoverflow.com/questions/47483951/how-can-i-define-a-threshold-value-to-detect-only-green-colour-objects-in-an-ima/47483966#47483966
@@ -229,64 +195,38 @@ def detect_and_draw_bound(camera_name, loc_x, loc_y, width=640, height=480):
             x, y, w, h = cv2.boundingRect(contour)
 
             # Draw a green bounding box around the yellow object
-            cv2.rectangle(frame_bgr, (x, y), (x+w, y+h), (0, 255, 0), 2)
-            
-            # dirname = os.path.dirname(__file__)
-            # filename = os.path.join(dirname, 'test_rgb_filtered.png')
-            # cv2.imwrite(filename, cv2.flip(frame_bgr, -1))
-
-    # Assuming `frame` is the modified frame with bounding boxes, in BGR format, and of shape (height, width, 3)
-    # Convert frame from BGR to RGB
+            cv2.rectangle(frame_bgr, (x, y), (x+w, y+h), (0, 255, 0), 2)       
+        
     frame_bdbox = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
-    
-    # dirname = os.path.dirname(__file__)
-    # filename = os.path.join(dirname, 'test_filtered.png')
-    # cv2.imwrite(filename, cv2.flip(frame_bdbox, -1))
-
-    # Flatten the frame to match MuJoCo's expected input format (height*width*3, 1)
     frame_boundbox = frame_bdbox.flatten()
     
-    # 5. Call mjr_drawPixels using the rectangular viewport you created in step 1.
-    mj.mjr_drawPixels(frame_boundbox, None, offscreen_viewport, offscreen_context)
+    bounding_box = np.array([x, y, x+w, y+h])
     
-    # bounding box Format: [x_min, y_min, x_max, y_max]
-    return [x, y, x+w, y+h]
-
-
-def move_robot_to_center(bounding_box, frame_width, frame_height):
-    '''
-    Move the robot to keep the bounding box centered
-    '''
-    # Calculate the center of the bounding box
+    # center of the bounding box
     bb_center_x = (bounding_box[0] + bounding_box[2]) / 2
     bb_center_y = (bounding_box[1] + bounding_box[3]) / 2
 
-    # Calculate the center of the frame
+    # center of the frame
     frame_center_x = frame_width / 2
     frame_center_y = frame_height / 2
 
-    # Calculate the difference between the centers
+    # difference between the centers
     dx = frame_center_x - bb_center_x
     dy = frame_center_y - bb_center_y
     
-    # Determine sign of torque based on offset
-    if dx < 0:
-        # Object is to the left of center, rotate motor clockwise
-        sgn = 1
-    elif dx > 0:
-        # Object is to the right of center, rotate motor counterclockwise
-        sgn = -1
-    else:
-        # Object is centered, no torque needed
-        sgn = 0
+    if debug_opencv:
+        dirname = os.path.dirname(__file__)
         
-    sgn = 1
+        filename = os.path.join(dirname, 'test_hsvframe.png')
+        cv2.imwrite(filename, cv2.flip(hsv_frame, -1))
+
+        filename = os.path.join(dirname, 'test_rgb_filtered.png')
+        cv2.imwrite(filename, cv2.flip(frame_bgr, -1))
         
-    # Move the robot to compensate for the difference
-    # This will depend on your Mujoco simulation and how you control it
-    # For demonstration, let's assume you have a function to move the robot
-    K = 0.1
-    data.ctrl[0] = sgn * K*dx
+        filename = os.path.join(dirname, 'test_filtered.png')
+        cv2.imwrite(filename, cv2.flip(frame_bdbox, -1))
+    
+    return frame_boundbox
 
 
 #get the full path
@@ -346,7 +286,7 @@ while not glfw.window_should_close(window):
         window)
     viewport = mj.MjrRect(0, 0, viewport_width, viewport_height)
 
-    #print camera configuration (help to initialize the view)
+    # print camera configuration (help to initialize the view)
     if (print_camera_config==1):
         print('cam.azimuth =',cam.azimuth,';','cam.elevation =',cam.elevation,';','cam.distance = ',cam.distance)
         print('cam.lookat =np.array([',cam.lookat[0],',',cam.lookat[1],',',cam.lookat[2],'])')
@@ -356,25 +296,19 @@ while not glfw.window_should_close(window):
                        mj.mjtCatBit.mjCAT_ALL.value, scene)
     mj.mjr_render(viewport, scene, context)
     
-    # set second screen on upper right
-    width = 640
-    height = 480
-    render_insetscreen('robot_camera', loc_x=viewport_width - width, loc_y=viewport_height - height, width=width, height=height)
-
-    # Detect bounding box using OpenCV
-    bounding_box = detect_and_draw_bound('robot_camera', loc_x=viewport_width - width, loc_y=0, width=640, height=480)
-            
+    # get offscreen simulation frame
+    frame, offscreen_viewport, offscreen_context = get_frame('robot_camera', loc_x=viewport_width - frame_width, loc_y=viewport_height - frame_height, width=frame_width, height=frame_height)
+    
+    # create bounding box using OpenCV
+    frame_boundbox = detect_and_draw_bound(frame, width=frame_width, height=frame_height)
+    
+    # render bounding box on inset frame
+    mj.mjr_drawPixels(frame_boundbox, None, offscreen_viewport, offscreen_context)
+    
     # swap OpenGL buffers (blocking call due to v-sync)
     glfw.swap_buffers(window)
 
     # process pending GUI events, call GLFW callbacks
     glfw.poll_events()
-
-    # Get frame dimensions
-    frame_width = width
-    frame_height = height
-
-    # Move the robot to keep the bounding box centered
-    move_robot_to_center(bounding_box, frame_width, frame_height)
 
 glfw.terminate()
