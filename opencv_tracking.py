@@ -44,8 +44,11 @@ def controller(model, data):
     #     data.ctrl[0] = 0
         
     # pd controller to track object
-    K = 0.1
-    data.ctrl[0] = K*dx
+    if dx != frame_width/2:
+        K = 0.1
+        data.ctrl[0] = K*dx
+    else:
+        data.ctrl[0] = 0
     
     
 def keyboard(window, key, scancode, act, mods):
@@ -167,6 +170,9 @@ def get_frame(camera_name, loc_x, loc_y, width=640, height=480):
 
 def detect_and_draw_bound(frame, width=640, height=480):
     global dx, dy
+    
+    # Initialize bounding box coordinates with default values
+    x, y, w, h = 0, 0, 0, 0
     
     # Reshape mujoco frame [height x width, 1] to 3D array for opencv input [height, width, 3]
     frame_reshaped = frame.reshape((height, width, 3))
