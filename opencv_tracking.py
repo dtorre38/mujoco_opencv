@@ -1,10 +1,9 @@
 import mujoco as mj
 from mujoco.glfw import glfw
-import matplotlib.pyplot as plt
-import numpy as np
 import os
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 xml_path = 'box.xml' #xml file (assumes this is in the same folder as this file)
@@ -20,7 +19,7 @@ lastx = 0
 lasty = 0
 
 # for tracking bounding box
-x_bd_center, y_bd_center, w_bd_box, h_bd_box = 0.0, 0.0, 0.0, 0.0
+# x_bd_center, y_bd_center, w_bd_box, h_bd_box = 0.0, 0.0, 0.0, 0.0
 
 
 def init_controller(model,data):
@@ -32,24 +31,13 @@ def controller(model, data):
     obst_des = 1
     data.qfrc_applied[obst_des] = 0.1
     
-    # sigmoid for tracking - decent results, better than pd controller
-    u = 0.35 / (1 + np.exp(-data.qpos[obst_des]))
+    # sigmoid for tracking - decent results, better than manually tuned pd controller
+    # u = 0.35 / (1 + np.exp(-data.qpos[obst_des]))
     
-    if data.qpos[0] < np.pi/2:
-        data.ctrl[0] = u
-    else:
-        data.ctrl[0] = 0
-    
-    # 1. Detect the bounding box using OpenCV on each frame.
-    # detect_and_draw_bound()
-    # 2. Calculate the center of the bounding box.
-    # x_bd_center, y_bd_center, w_bd_box, h_bd_box
-    # 3. Determine the difference between the center of the bounding box and the center of the frame.
-    # (width/2) - x_bd_center, (height/2) - y_bd_center
-    # 4. Move the "robot" (in this case, manipulate the Mujoco simulation) to compensate for the difference and keep the bounding box centered.
-    # x = np.array([data.qpos[1], data.qvel[1]])
-    # K = np.array([2, 0.2])
-    # data.ctrl[0] = -K*x
+    # if data.qpos[0] < np.pi/2:
+    #     data.ctrl[0] = u
+    # else:
+    #     data.ctrl[0] = 0
     
     
 def keyboard(window, key, scancode, act, mods):
@@ -181,7 +169,7 @@ def detect_and_draw_bound(camera_name, loc_x, loc_y, width=640, height=480):
     # top left: loc_x = 0, loc_y = viewport_height - height
     # top middle: loc_x = 0.5*(viewport_width - width), loc_y = viewport_height - height
     # top right: loc_x = viewport_width - width, loc_y = viewport_height - height
-    global x_bd_center, y_bd_center, w_bd_box, h_bd_box
+    # global x_bd_center, y_bd_center, w_bd_box, h_bd_box
     
     # Adding an inset window from a different perspective
     # https://github.com/google-deepmind/mujoco/issues/744#issuecomment-1442221178
@@ -239,8 +227,6 @@ def detect_and_draw_bound(camera_name, loc_x, loc_y, width=640, height=480):
         if cv2.contourArea(contour) > 500:
             # Get bounding box for each yellow object
             x, y, w, h = cv2.boundingRect(contour)
-            x_bd_center, y_bd_center, w_bd_box, h_bd_box = x, y, w, h
-            # print(x, y, w, h)
 
             # Draw a green bounding box around the yellow object
             cv2.rectangle(frame_bgr, (x, y), (x+w, y+h), (0, 255, 0), 2)
@@ -262,7 +248,46 @@ def detect_and_draw_bound(camera_name, loc_x, loc_y, width=640, height=480):
     
     # 5. Call mjr_drawPixels using the rectangular viewport you created in step 1.
     mj.mjr_drawPixels(frame_boundbox, None, offscreen_viewport, offscreen_context)
-  
+    
+    # bounding box Format: [x_min, y_min, x_max, y_max]
+    return [x, y, x+w, y+h]
+
+
+def move_robot_to_center(bounding_box, frame_width, frame_height):
+    '''
+    Move the robot to keep the bounding box centered
+    '''
+    # Calculate the center of the bounding box
+    bb_center_x = (bounding_box[0] + bounding_box[2]) / 2
+    bb_center_y = (bounding_box[1] + bounding_box[3]) / 2
+
+    # Calculate the center of the frame
+    frame_center_x = frame_width / 2
+    frame_center_y = frame_height / 2
+
+    # Calculate the difference between the centers
+    dx = frame_center_x - bb_center_x
+    dy = frame_center_y - bb_center_y
+    
+    # Determine sign of torque based on offset
+    if dx < 0:
+        # Object is to the left of center, rotate motor clockwise
+        sgn = 1
+    elif dx > 0:
+        # Object is to the right of center, rotate motor counterclockwise
+        sgn = -1
+    else:
+        # Object is centered, no torque needed
+        sgn = 0
+        
+    sgn = 1
+        
+    # Move the robot to compensate for the difference
+    # This will depend on your Mujoco simulation and how you control it
+    # For demonstration, let's assume you have a function to move the robot
+    K = 0.1
+    data.ctrl[0] = sgn * K*dx
+
 
 #get the full path
 dirname = os.path.dirname(__file__)
@@ -298,7 +323,7 @@ glfw.set_scroll_callback(window, scroll)
 # cam.elevation = -45
 # cam.distance = 2
 # cam.lookat = np.array([0.0, 0.0, 0])
-cam.azimuth = 90 ; cam.elevation = -1.57 ; cam.distance =  9
+cam.azimuth = 81 ; cam.elevation = -25 ; cam.distance =  9
 cam.lookat =np.array([ 0.0 , 0.0 , 0.0 ])
 
 #initialize the controller
@@ -336,12 +361,20 @@ while not glfw.window_should_close(window):
     height = 480
     render_insetscreen('robot_camera', loc_x=viewport_width - width, loc_y=viewport_height - height, width=width, height=height)
 
-    detect_and_draw_bound('robot_camera', loc_x=viewport_width - width, loc_y=0, width=640, height=480)
+    # Detect bounding box using OpenCV
+    bounding_box = detect_and_draw_bound('robot_camera', loc_x=viewport_width - width, loc_y=0, width=640, height=480)
             
     # swap OpenGL buffers (blocking call due to v-sync)
     glfw.swap_buffers(window)
 
     # process pending GUI events, call GLFW callbacks
     glfw.poll_events()
+
+    # Get frame dimensions
+    frame_width = width
+    frame_height = height
+
+    # Move the robot to keep the bounding box centered
+    move_robot_to_center(bounding_box, frame_width, frame_height)
 
 glfw.terminate()
