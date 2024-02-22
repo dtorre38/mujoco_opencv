@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 
-void render_insetscreen(mjModel* model, mjData* data, mjOption* opt, mjvScene* scene, mjrContext* context,
+void get_frame(mjModel* model, mjData* data, mjOption* opt, mjvScene* scene, mjrContext* context,
                         const char* camera_name, int loc_x, int loc_y,
                         int width, int height) 
 {
