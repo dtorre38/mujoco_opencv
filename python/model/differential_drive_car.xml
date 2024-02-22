@@ -1,0 +1,55 @@
+<!-- https://mujoco.readthedocs.io/en/latest/overview.html?highlight=hello.xml#examples -->
+
+<mujoco model="differential-drive-car">
+  <option gravity = "0 0 -9.81" timestep="0.001" integrator="RK4">
+  <flag contact="enable" />
+ </option >
+ <visual>
+     <headlight ambient="0.5 0.5 0.5"/>
+ </visual>
+   <worldbody>
+      <geom name = "plane" type="plane" size="10 10 0.1" rgba="0.9 0.9 0.9 1"/>
+      <body name="chassis" pos="0 0 0.5" euler = "0 0 0">
+         <joint type="free"/>
+         <inertial pos="0 0 0" mass="10" diaginertia="1 1 1"/>
+         <geom type="box" size=".5 .2 .05" rgba="1 1 0.1 1"/>
+         <site name="marker" pos="0 0 0" size="0.1"/>
+         <camera name="robot_camera" pos="0.5 0 0.5" euler="0 -90 270"/>
+         <body name="left-wheel" pos="-0.5 0.25 0" euler = "90 0 0" >
+            <joint name = "LW" type="hinge" axis = "0 0 -1" pos = "0 0 0"/>
+            <geom type="cylinder" size=".2 0.05" rgba=".1 .1 .1 1" mass="10"/>
+        </body>
+        <body name="right-wheel" pos="-0.5 -0.25 0" euler = "90 0 0" >
+           <joint name = "RW" type="hinge" axis = "0 0 -1" pos = "0 0 0"/>
+           <geom type="cylinder" size=".2 0.05" rgba=".1 .1 .1 1" mass="10"/>
+       </body>
+     </body>
+     <body name='obstacle1' pos="3 0 0.5" euler="0 0 0">
+      <joint name='joint1' type='slide' axis='0 1 0' pos = '0 0 0'/>
+      <geom type="box" size=".5 .5 .5" rgba="1 1 0.1 1" mass="100"/>
+      <camera name="obstacle_camera1" pos="0 0 1" zaxis="0 0 1"/>
+    </body>
+    <body name='obstacle2' pos="0 3 0.5" euler="0 0 0">
+      <joint name='joint2' type='slide' axis='1 0 0' pos = '0 0 0'/>
+      <geom type="box" size=".5 .5 .5" rgba="1 0 0 1" mass="10"/>
+      <camera name="obstacle_camera2" pos="0 0 1" zaxis="0 0 1"/>
+    </body>
+    <body name='obstacle3' pos="-3 0 0.5" euler="0 0 0">
+      <joint name='joint3' type='slide' axis='1 0 0' pos = '0 0 0'/>
+      <geom type="box" size=".5 .5 .5" rgba="0 1 0 1" mass="10"/>
+      <camera name="obstacle_camera3" pos="0 0 1" zaxis="0 0 1"/>
+    </body>
+    <body name='obstacle4' pos="0 -3 0.5" euler="0 0 0">
+      <joint name='joint4' type='slide' axis='1 0 0' pos = '0 0 0'/>
+      <geom type="box" size=".5 .5 .5" rgba="0 0 1 1" mass="10"/>
+      <camera name="obstacle_camera4" pos="0 0 1" zaxis="0 0 1"/>
+    </body>
+   </worldbody>
+   <sensor>
+     <framepos objtype="site" objname="marker"/>
+   </sensor>
+   <actuator>
+     <velocity name="vservoL" joint="LW" kv="10" />
+     <velocity name="vservoR" joint="RW" kv="10" />
+   </actuator>
+</mujoco>

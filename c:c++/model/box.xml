@@ -1,0 +1,43 @@
+<mujoco>
+  <compiler texturedir="asset"/>
+  
+  <asset>
+    <texture name="texaruco" type="2d" file="5x5_1000-0.png"/>
+
+    <material name="mataruco" texture="texaruco"/>
+  </asset>
+  
+  <option gravity = "0 0 -9.81" />
+   <worldbody>
+      <light diffuse="1 1 1" pos="0 0 20" dir="0 0 -1"/>
+			<geom type="plane" size="10 10 0.1" rgba=".9 0 0 1"/>
+      <body pos="0 0 0.5" euler="0 0 0">
+        <joint name="robot" type="hinge" axis = "0 0 1" pos = "0 0 -0.5"/>
+				<geom type="box" size=".5 .5 .5" material="mataruco" euler="0 90 0" rgba="1 1 1 1" mass="10"/>
+        <camera name="robot_camera" pos="0.5 0 0.5" euler="0 -90 270"/>
+      </body>
+      <body name='obstacle1' pos="3 0 0.5" euler="0 0 0">
+				<joint name='joint1' type='slide' axis='0 1 0' pos = '0 0 0'/>
+				<geom type="box" size=".5 .5 .5" rgba="1 1 0.1 1" mass="10"/>
+        <camera name="obstacle_camera1" pos="0 0 1" zaxis="0 0 1"/>
+      </body>
+      <body name='obstacle2' pos="0 3 0.5" euler="0 0 0">
+				<joint name='joint2' type='slide' axis='1 0 0' pos = '0 0 0'/>
+				<geom type="box" size=".5 .5 .5" rgba="1 0 0 1" mass="10"/>
+        <camera name="obstacle_camera2" pos="0 0 1" zaxis="0 0 1"/>
+      </body>
+      <body name='obstacle3' pos="-3 0 0.5" euler="0 0 0">
+				<joint name='joint3' type='slide' axis='1 0 0' pos = '0 0 0'/>
+				<geom type="box" size=".5 .5 .5" rgba="0 1 0 1" mass="10"/>
+        <camera name="obstacle_camera3" pos="0 0 1" zaxis="0 0 1"/>
+      </body>
+      <body name='obstacle4' pos="0 -3 0.5" euler="0 0 0">
+				<joint name='joint4' type='slide' axis='1 0 0' pos = '0 0 0'/>
+				<geom type="box" size=".5 .5 .5" rgba="0 0 1 1" mass="10"/>
+        <camera name="obstacle_camera4" pos="0 0 1" zaxis="0 0 1"/>
+      </body>
+    </worldbody>
+    <actuator>
+      <motor name="force" joint="robot"  gear="1" />
+    </actuator>
+</mujoco>

@@ -1,0 +1,18 @@
+Wed Feb 21 08:51:37 2024
+WARNING: mju_openResource: unknown file 'box.xml'
+
+Wed Feb 21 08:51:37 2024
+ERROR: Load model error: mjParseXML: could not open file 'box.xml'
+
+Wed Feb 21 08:57:19 2024
+ERROR: mjv_updateCamera: unknown camera type
+
+Wed Feb 21 08:57:28 2024
+ERROR: mjv_updateCamera: unknown camera type
+
+Wed Feb 21 08:58:10 2024
+ERROR: mjv_updateCamera: unknown camera type
+
+Wed Feb 21 08:59:43 2024
+ERROR: mjv_updateCamera: track body id is outside valid range
+

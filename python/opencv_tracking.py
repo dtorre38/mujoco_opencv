@@ -5,10 +5,10 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from detect_and_draw_bound import detect_and_draw_bound
-from get_frame import get_frame
+from utils.detect_and_draw_bound import detect_and_draw_bound
+from utils.get_frame import get_frame
 
-xml_path = 'box.xml'  # xml file (assumes this is in the same folder as this file)
+xml_path = 'model/box.xml'  # xml file (assumes this is in the same folder as this file)
 simend = 100  # simulation time
 print_camera_config = 0  # set to 1 to print camera config
                          # this is useful for initializing view of the model
@@ -21,8 +21,8 @@ lastx = 0
 lasty = 0
 
 # inset screen width and height
-frame_width = 320
-frame_height = 240
+frame_width = 640
+frame_height = 480
 dx = 0  # frame center xpos - bounding box center xpos
 dy = 0  # frame center ypos - bounding box center ypos
 bounding_box = np.array([0, 0, 0, 0])  # [x, y, x+w, y+h]: bottom left and top right coordinates
@@ -140,7 +140,8 @@ opt = mj.MjvOption()                        # visualization options
 
 # Init GLFW, create window, make OpenGL context current, request v-sync
 glfw.init()
-window = glfw.create_window(1200, 900, "Demo", None, None)
+# window = glfw.create_window(1200, 900, "Demo", None, None)
+window = glfw.create_window(900, 600, "OpenCV Tracking", None, None)
 glfw.make_context_current(window)
 glfw.swap_interval(1)
 
@@ -195,13 +196,13 @@ while not glfw.window_should_close(window):
     mj.mjr_render(viewport, scene, context)
     
     # get offscreen simulation frame
-    frame, offscreen_viewport, offscreen_context = get_frame(model, data, opt, scene, 'robot_camera', loc_x=viewport_width - frame_width, loc_y=viewport_height - frame_height, width=frame_width, height=frame_height)
+    frame, offscreen_viewport = get_frame(model, data, opt, scene, context, 'robot_camera', loc_x=viewport_width - frame_width, loc_y=viewport_height - frame_height, width=frame_width, height=frame_height)
     
     # create bounding box using OpenCV
     frame_boundbox, bounding_box, dx, dy = detect_and_draw_bound(frame, width=frame_width, height=frame_height)
     
     # render bounding box on inset frame
-    mj.mjr_drawPixels(frame_boundbox, None, offscreen_viewport, offscreen_context)
+    mj.mjr_drawPixels(frame_boundbox, None, offscreen_viewport, context)
     
     # swap OpenGL buffers (blocking call due to v-sync)
     glfw.swap_buffers(window)

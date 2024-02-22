@@ -6,11 +6,11 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 import matplotlib.pyplot as plt
 
-from detect_and_draw_bound import detect_and_draw_bound
-from get_frame import get_frame
+from utils.detect_and_draw_bound import detect_and_draw_bound
+from utils.get_frame import get_frame
 
 
-xml_path = 'differential_drive_car.xml' # xml file (assumes this is in the same folder as this file)
+xml_path = 'model/differential_drive_car.xml' # xml file (assumes this is in the same folder as this file)
 simend = 60  # simulation time
 print_camera_config = 0  # set to 1 to print camera config
                          # this is useful for initializing view of the model)
@@ -99,45 +99,45 @@ def controller(model, data):
     # data.ctrl[0] = vel_ref_left
     # data.ctrl[1] = vel_ref_right
     
-    # b = 0.25  # distance between wheels
-    # r = 0.2  # radius of wheels
-    
-    # # tracking moving object via rotation (aiming to keep object centered with help of bounding box)
-    # K = 0.1
-    # w = -K*dx
-    
-    # if dx != frame_width/2:
-    #     # Calculate wheel velocities for rotating in place
-    #     data.ctrl[0] = w * b / (2 * r)
-    #     data.ctrl[1] = -w * b / (2 * r)
-    # else:
-    #     data.ctrl[0] = 0.0
-    #     data.ctrl[1] = 0.0
-    
-    # tracking moving obstacle by following - not working well
+    # tracking moving object via rotation (aiming to keep object centered with help of bounding box)
     b = 0.25  # distance between wheels
     r = 0.2  # radius of wheels
     
-    # Set parameters
-    K_rotate = 0.1  # Proportional gain for rotation
-    K_forward = 0.01  # Proportional gain for forward/backward motion
-    desired_distance = 100  # Desired distance from the object (in pixels)
+    K = 0.1
+    w = -K*dx
+    
+    if dx != frame_width/2:
+        # Calculate wheel velocities for rotating in place
+        data.ctrl[0] = w * b / (2 * r)
+        data.ctrl[1] = -w * b / (2 * r)
+    else:
+        data.ctrl[0] = 0.0
+        data.ctrl[1] = 0.0
+    
+    # tracking moving obstacle by following - not working well
+    # b = 0.25  # distance between wheels
+    # r = 0.2  # radius of wheels
+    
+    # # Set parameters
+    # K_rotate = 0.1  # Proportional gain for rotation
+    # K_forward = 0.01  # Proportional gain for forward/backward motion
+    # desired_distance = 100  # Desired distance from the object (in pixels)
 
-    # Rotation control
-    w = -K_rotate * dx
+    # # Rotation control
+    # w = -K_rotate * dx
 
-    # Forward/backward control
-    object_distance = frame_height - bounding_box[1]
-    error_distance = object_distance - desired_distance
-    v = K_forward * error_distance
+    # # Forward/backward control
+    # object_distance = frame_height - bounding_box[1]
+    # error_distance = object_distance - desired_distance
+    # v = K_forward * error_distance
 
-    # Calculate wheel velocities
-    left_wheel_velocity = v + w * b / (2 * r)
-    right_wheel_velocity = v - w * b / (2 * r)
+    # # Calculate wheel velocities
+    # left_wheel_velocity = v + w * b / (2 * r)
+    # right_wheel_velocity = v - w * b / (2 * r)
 
-    # Update motor control commands
-    data.ctrl[0] = left_wheel_velocity
-    data.ctrl[1] = right_wheel_velocity
+    # # Update motor control commands
+    # data.ctrl[0] = left_wheel_velocity
+    # data.ctrl[1] = right_wheel_velocity
 
     
 
@@ -228,7 +228,8 @@ opt = mj.MjvOption()                        # visualization options
 
 # Init GLFW, create window, make OpenGL context current, request v-sync
 glfw.init()
-window = glfw.create_window(1200, 900, "Demo", None, None)
+# window = glfw.create_window(1200, 900, "Demo", None, None)
+window = glfw.create_window(900, 600, "Differential Drive Tracking", None, None)
 glfw.make_context_current(window)
 glfw.swap_interval(1)
 
@@ -343,13 +344,13 @@ while not glfw.window_should_close(window):
     mj.mjr_render(viewport, scene, context)
     
     # get offscreen simulation frame
-    frame, offscreen_viewport, offscreen_context = get_frame(model, data, opt, scene, 'robot_camera', loc_x=viewport_width - frame_width, loc_y=viewport_height - frame_height, width=frame_width, height=frame_height)
+    frame, offscreen_viewport = get_frame(model, data, opt, scene, context, 'robot_camera', loc_x=viewport_width - frame_width, loc_y=viewport_height - frame_height, width=frame_width, height=frame_height)
     
     # create bounding box using OpenCV
     frame_boundbox, bounding_box, dx, dy = detect_and_draw_bound(frame, width=frame_width, height=frame_height)
     
     # render bounding box on inset frame
-    mj.mjr_drawPixels(frame_boundbox, None, offscreen_viewport, offscreen_context)
+    mj.mjr_drawPixels(frame_boundbox, None, offscreen_viewport, context)
 
     # swap OpenGL buffers (blocking call due to v-sync)
     glfw.swap_buffers(window)

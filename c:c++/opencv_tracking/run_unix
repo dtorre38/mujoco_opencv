@@ -1,0 +1,5 @@
+#cmake .
+reset
+make clean
+make
+./main ../model/box.xml
