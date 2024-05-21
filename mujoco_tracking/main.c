@@ -8,7 +8,6 @@
 #include "string.h"
 #include <GLFW/glfw3.h>
 
-#include "../utils/get_frame.c"
 #include "../utils/render_insetwindow.c"
 
 // MuJoCo data structures

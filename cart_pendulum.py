@@ -5,6 +5,7 @@ import os
 import control
 
 from utils.render_insetwindow import render_insetscreen
+from utils.render_insetwindow_depth import render_insetscreen_depth
 
 xml_path = 'model/cart_pendulum.xml'  # xml file (assumes this is in the same folder as this file)
 simend = 100  # simulation time
@@ -209,7 +210,7 @@ opt = mj.MjvOption()  # visualization options
 
 # Init GLFW, create window, make OpenGL context current, request v-sync
 glfw.init()
-window = glfw.create_window(1200, 900, "Demo", None, None)
+window = glfw.create_window(1200, 900, "Cart Pendulum", None, None)
 glfw.make_context_current(window)
 glfw.swap_interval(1)
 
@@ -266,6 +267,8 @@ while not glfw.window_should_close(window):
     height = 480
     render_insetscreen(model, data, opt, scene, context, 'robot_camera', loc_x=viewport_width - width, loc_y=viewport_height - height, width=width,
                        height=height)
+    # render_insetscreen_depth(model, data, opt, scene, context, 'robot_camera', loc_x=viewport_width - width, loc_y=viewport_height - height, width=width,
+    #                    height=height)
 
     # swap OpenGL buffers (blocking call due to v-sync)
     glfw.swap_buffers(window)

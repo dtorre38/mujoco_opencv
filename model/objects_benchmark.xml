@@ -1,0 +1,117 @@
+<?xml version="1.0" ?>
+<mujoco model="objects">
+  <worldbody>
+    <body name="object1" pos="-1.0 -1.0 0.5" euler="0 0 0">
+      <inertial pos="0 0 0" mass="5.0" diaginertia="0.01 0.01 0.01"/>
+      <joint type="free"/>
+      <geom type="cylinder" size="0.5 0.5" rgba="0.7 0.9 0.1 1"/>
+      <site name="object1_site" pos="0 0 0" quat="1 0 0 0" size="0.01"/>
+    </body>
+    <body name="object2" pos="0.0 2.0 1.0" euler="0 0 0">
+      <inertial pos="0 0 0" mass="5.0" diaginertia="0.01 0.01 0.01"/>
+      <joint type="free"/>
+      <geom type="cylinder" size="0.5 1.0" rgba="0.6 0.5 0.9 1"/>
+      <site name="object2_site" pos="0 0 0" quat="1 0 0 0" size="0.01"/>
+    </body>
+    <body name="object3" pos="4.0 2.0 0.4" euler="0 0 0">
+      <inertial pos="0 0 0" mass="7.0" diaginertia="0.01 0.01 0.01"/>
+      <joint type="free"/>
+      <geom type="cylinder" size="0.5 0.4" rgba="0.4 0.6 0.7 1"/>
+      <site name="object3_site" pos="0 0 0" quat="1 0 0 0" size="0.01"/>
+    </body>
+    <body name="object4" pos="5.0 4.0 0.3" euler="0 0 0">
+      <inertial pos="0 0 0" mass="9.0" diaginertia="0.01 0.01 0.01"/>
+      <joint type="free"/>
+      <geom type="cylinder" size="0.5 0.3" rgba="0.4 0.5 0.1 1"/>
+      <site name="object4_site" pos="0 0 0" quat="1 0 0 0" size="0.01"/>
+    </body>
+    <body name="object5" pos="5.0 5.0 0.4" euler="0 0 0">
+      <inertial pos="0 0 0" mass="2.0" diaginertia="0.01 0.01 0.01"/>
+      <joint type="free"/>
+      <geom type="cylinder" size="0.5 0.4" rgba="0.4 0.0 0.9 1"/>
+      <site name="object5_site" pos="0 0 0" quat="1 0 0 0" size="0.01"/>
+    </body>
+    <body name="object6" pos="5.0 6.0 0.7" euler="0 0 0">
+      <inertial pos="0 0 0" mass="10.0" diaginertia="0.01 0.01 0.01"/>
+      <joint type="free"/>
+      <geom type="cylinder" size="0.5 0.7" rgba="0.4 0.8 0.5 1"/>
+      <site name="object6_site" pos="0 0 0" quat="1 0 0 0" size="0.01"/>
+    </body>
+    <body name="object7" pos="5.0 9.0 0.7" euler="0 0 0">
+      <inertial pos="0 0 0" mass="5.0" diaginertia="0.01 0.01 0.01"/>
+      <joint type="free"/>
+      <geom type="cylinder" size="0.5 0.7" rgba="0.7 0.1 0.5 1"/>
+      <site name="object7_site" pos="0 0 0" quat="1 0 0 0" size="0.01"/>
+    </body>
+    <body name="object8" pos="8.0 9.0 1.0" euler="0 0 0">
+      <inertial pos="0 0 0" mass="10.0" diaginertia="0.01 0.01 0.01"/>
+      <joint type="free"/>
+      <geom type="cylinder" size="0.5 1.0" rgba="0.4 0.2 0.9 1"/>
+      <site name="object8_site" pos="0 0 0" quat="1 0 0 0" size="0.01"/>
+    </body>
+    <body name="object9" pos="7.0 9.0 0.8" euler="0 0 0">
+      <inertial pos="0 0 0" mass="9.0" diaginertia="0.01 0.01 0.01"/>
+      <joint type="free"/>
+      <geom type="cylinder" size="0.5 0.8" rgba="0.4 0.6 0.8 1"/>
+      <site name="object9_site" pos="0 0 0" quat="1 0 0 0" size="0.01"/>
+    </body>
+    <body name="object10" pos="8.0 10.0 1.1" euler="0 0 0">
+      <inertial pos="0 0 0" mass="7.0" diaginertia="0.01 0.01 0.01"/>
+      <joint type="free"/>
+      <geom type="cylinder" size="0.5 1.1" rgba="0.7 0.3 0.8 1"/>
+      <site name="object10_site" pos="0 0 0" quat="1 0 0 0" size="0.01"/>
+    </body>
+    <body name="object11" pos="9.0 11.0 0.3" euler="0 0 0">
+      <inertial pos="0 0 0" mass="1.0" diaginertia="0.01 0.01 0.01"/>
+      <joint type="free"/>
+      <geom type="cylinder" size="0.5 0.3" rgba="0.7 0.7 0.3 1"/>
+      <site name="object11_site" pos="0 0 0" quat="1 0 0 0" size="0.01"/>
+    </body>
+    <body name="object12" pos="12.0 13.0 0.1" euler="0 0 0">
+      <inertial pos="0 0 0" mass="5.0" diaginertia="0.01 0.01 0.01"/>
+      <joint type="free"/>
+      <geom type="cylinder" size="0.5 0.1" rgba="0.6 0.1 0.8 1"/>
+      <site name="object12_site" pos="0 0 0" quat="1 0 0 0" size="0.01"/>
+    </body>
+    <body name="object13" pos="12.0 12.0 0.3" euler="0 0 0">
+      <inertial pos="0 0 0" mass="5.0" diaginertia="0.01 0.01 0.01"/>
+      <joint type="free"/>
+      <geom type="cylinder" size="0.5 0.3" rgba="0.1 0.1 0.3 1"/>
+      <site name="object13_site" pos="0 0 0" quat="1 0 0 0" size="0.01"/>
+    </body>
+    <body name="object14" pos="15.0 15.0 0.2" euler="0 0 0">
+      <inertial pos="0 0 0" mass="7.0" diaginertia="0.01 0.01 0.01"/>
+      <joint type="free"/>
+      <geom type="cylinder" size="0.5 0.2" rgba="0.2 0.1 0.6 1"/>
+      <site name="object14_site" pos="0 0 0" quat="1 0 0 0" size="0.01"/>
+    </body>
+    <body name="object15" pos="13.0 13.0 0.5" euler="0 0 0">
+      <inertial pos="0 0 0" mass="3.0" diaginertia="0.01 0.01 0.01"/>
+      <joint type="free"/>
+      <geom type="cylinder" size="0.5 0.5" rgba="0.3 0.8 0.8 1"/>
+      <site name="object15_site" pos="0 0 0" quat="1 0 0 0" size="0.01"/>
+    </body>
+    <body name="goal" pos="10 10 2.5" euler="0 0 0">
+      <geom type="cylinder" size="0.5 0.5" rgba="0.1 0.9 0.1 0.1"/>
+      <site name="goal_site" pos="0 0 0" quat="1 0 0 0" size="0.01"/>
+    </body>
+  </worldbody>
+  <sensor>
+    <framepos name="object1_pos" objtype="site" objname="object1_site"/>
+    <framepos name="object2_pos" objtype="site" objname="object2_site"/>
+    <framepos name="object3_pos" objtype="site" objname="object3_site"/>
+    <framepos name="object4_pos" objtype="site" objname="object4_site"/>
+    <framepos name="object5_pos" objtype="site" objname="object5_site"/>
+    <framepos name="object6_pos" objtype="site" objname="object6_site"/>
+    <framepos name="object7_pos" objtype="site" objname="object7_site"/>
+    <framepos name="object8_pos" objtype="site" objname="object8_site"/>
+    <framepos name="object9_pos" objtype="site" objname="object9_site"/>
+    <framepos name="object10_pos" objtype="site" objname="object10_site"/>
+    <framepos name="object11_pos" objtype="site" objname="object11_site"/>
+    <framepos name="object12_pos" objtype="site" objname="object12_site"/>
+    <framepos name="object13_pos" objtype="site" objname="object13_site"/>
+    <framepos name="object14_pos" objtype="site" objname="object14_site"/>
+    <framepos name="object15_pos" objtype="site" objname="object15_site"/>
+    <framepos name="goal_pos" objtype="site" objname="goal_site"/>
+  </sensor>
+</mujoco>

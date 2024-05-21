@@ -1,0 +1,24 @@
+Insert this in main.c where function call render_insetwindow() is instead.
+
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+        // Define the size and position of the inset screen within the main window
+        int inset_width = 640;
+        int inset_height = 480;
+        int inset_xpos = viewport.width - inset_width;  
+        int inset_ypos = viewport.height - inset_height;
+
+        // Setup the viewport for the inset screen
+        mjrRect inset_viewport = {inset_xpos, inset_ypos, inset_width, inset_height};
+
+        // Setup the robot camera for tracking the moving object
+        int camera_id = mj_name2id(m, mjOBJ_CAMERA, "robot_camera");
+        mjvCamera inset_cam;
+        inset_cam.type = mjCAMERA_FIXED;
+        inset_cam.fixedcamid = camera_id;
+
+        // Update the scene for the inset camera if needed (can reuse scn with different camera settings)
+        mjv_updateScene(m, d, &opt, NULL, &inset_cam, mjCAT_ALL, &scn);
+
+        // Render the scene onto the inset screen
+        mjr_render(inset_viewport, &scn, &con);
+        // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //

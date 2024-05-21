@@ -1,19 +1,23 @@
-#include<stdbool.h> //for bool
-//#include<unistd.h> //for usleep
-//#include <math.h>
-
-#include <mujoco/mujoco.h>
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <iostream>
+#include <string>
 #include <GLFW/glfw3.h>
+#include <mujoco/mujoco.h>
+#include <opencv2/opencv.hpp>
+#include <cstdint>
 
-#include "../utils/get_frame.c"
 #include "../utils/render_insetwindow.c"
+#include "../utils/get_frame.cpp"
+#include "../utils/detect_and_draw_bound.cpp"
+#include "../utils/framedata.hpp"
+#include "../utils/boundingbox.hpp"
 
-// MuJoCo data structures
-mjModel* m = NULL;                  // MuJoCo model
-mjData* d = NULL;                   // MuJoCo data
+#include "common/my_controller.cpp"
+
+#define dtime 0.001
+
+// Global variables
+mjModel* m = nullptr; // MuJoCo model
+mjData* d = nullptr; // MuJoCo data
 mjvCamera cam;                      // abstract camera
 mjvOption opt;                      // visualization options
 mjvScene scn;                       // abstract scene
@@ -30,6 +34,7 @@ bool print_camera_config = 0;  // set to 1 to print camera config
                                // this is useful for initializing view of the model)
 
 // controller related variables
+double t_control = 0;
 float_t ctrl_update_freq = 100;
 mjtNum last_update = 0.0;
 mjtNum ctrl;
@@ -37,9 +42,6 @@ mjtNum ctrl;
 // inset screen width and height
 int frame_width = 640;
 int frame_height = 480;
-double dx = 0;  // frame center xpos - bounding box center xpos
-double dy = 0;  // frame center ypos - bounding box center ypos
-int bounding_box[4] = {0, 0, 0, 0};  // [x, y, x+w, y+h]: bottom left and top right coordinates
 
 
 // keyboard callback
@@ -110,41 +112,32 @@ void scroll(GLFWwindow* window, double xoffset, double yoffset)
 }
 
 
-void mycontroller(const mjModel* m, mjData* d)
-{
-    // move yellow cube
-    d->qfrc_applied[1] = 0.1;
-}
-
-
-int main(int argc, const char** argv)
-{
-    // check command-line arguments
-    if( argc!=2 )
-    {
-        printf(" USAGE:  basic modelfile\n");
+// Main function
+int main(int argc, char** argv) {
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " modelfile" << std::endl;
         return 0;
     }
 
-    // activate software - not needed after 2.3.6
-    // mj_activate("../../../mjkey.txt");
-    // mj_activate("mjkey.txt");
-
-    // load and compile model
+    // Initialize MuJoCo and load model
+    std::string modelFile = argv[1];
     char error[1000] = "Could not load binary model";
-    if( strlen(argv[1])>4 && !strcmp(argv[1]+strlen(argv[1])-4, ".mjb") )
-        m = mj_loadModel(argv[1], 0);
-    else
-        m = mj_loadXML(argv[1], 0, error, 1000);
-    if( !m )
-        mju_error_s("Load model error: %s", error);
-        
+    if (modelFile.size() > 4 && modelFile.substr(modelFile.size() - 4) == ".mjb") {
+        m = mj_loadModel(modelFile.c_str(), nullptr);
+    } else {
+        m = mj_loadXML(modelFile.c_str(), nullptr, error, 1000);
+    }
+    if (!m) {
+        throw std::runtime_error("Load model error: " + std::string(error));
+    }
+
     // make data
     d = mj_makeData(m);
 
     // init GLFW
-    if( !glfwInit() )
-        mju_error("Could not initialize GLFW");
+    if (!glfwInit()) {
+        throw std::runtime_error("Could not initialize GLFW");
+    }
 
     // create window, make OpenGL context current, request v-sync
     int viewport_width = 900;
@@ -167,7 +160,7 @@ int main(int argc, const char** argv)
     glfwSetMouseButtonCallback(window, mouse_button);
     glfwSetScrollCallback(window, scroll);
 
-     double arr_view[] = {90, -30, 10, 0.0, 0.0, 1.25};
+    double arr_view[] = {90, -30, 10, 0.0, 0.0, 1.25};
      cam.azimuth = arr_view[0];
      cam.elevation = arr_view[1];
      cam.distance = arr_view[2];
@@ -176,7 +169,20 @@ int main(int argc, const char** argv)
      cam.lookat[2] = arr_view[5];
 
     //  d->qpos[0]=1.57; // pi/2
-     mjcb_control = mycontroller;
+
+    // mjcb_control = mycontroller(m, d, result);
+
+    // initialize robot perspective camera
+    mjvCamera robot_cam;
+    const char* robot_front_cam = "robot_camera";
+    int rcam_id = mj_name2id(m, mjOBJ_CAMERA, robot_front_cam);
+    robot_cam.type = mjCAMERA_FIXED;
+    robot_cam.fixedcamid = rcam_id;
+
+    // create BoundingBox struct
+    BoundingBox result;
+    result.frame_width = frame_width;
+    result.frame_height = frame_height;
 
     // use the first while condition if you want to simulate for a period.
     while( !glfwWindowShouldClose(window))
@@ -188,7 +194,16 @@ int main(int argc, const char** argv)
         mjtNum simstart = d->time;
         while( d->time - simstart < 1.0/60.0 )
         {
+            // mj_step(m, d);
+            // mycontroller(m, d, result);
+
             mj_step(m, d);
+
+            if (d->time - t_control > dtime-1e-5)
+            {
+                mycontroller(m,d,result);
+                t_control = d->time;
+            }
         }
 
         // get framebuffer viewport
@@ -205,14 +220,32 @@ int main(int argc, const char** argv)
 
         int loc_x = viewport.width - frame_width;
         int loc_y = viewport.height - frame_height;
-        render_insetscreen(m, d, &opt, &scn, &con, "robot_camera", loc_x, loc_y, frame_width, frame_height);
+        // render_insetscreen(m, d, &opt, &scn, &con, "robot_camera", loc_x, loc_y, frame_width, frame_height);
+        
+        FrameData frameData(frame_width, frame_height);
+        get_frame(m, d, &opt, &scn, &con, &robot_cam, frameData, loc_x, loc_y, frame_width, frame_height);
+
+        // Reshape mujoco frame [height x width, 1] to 3D array for opencv input [height, width, 3]
+        cv::Mat frame_rgb = cv::Mat(frame_height, frame_width, CV_8UC3, frameData.pixels);
+
+        // Draw bounding box on frame
+        detect_and_draw_bound(result, frame_rgb, frame_width, frame_height);
+        
+        if (!result.frame.empty()) {
+            cv::Mat rgbFrame;
+
+            // Ensure data is contiguous before using it
+            if (!rgbFrame.isContinuous()) {
+                rgbFrame = result.frame;
+                mjr_drawPixels(rgbFrame.data, NULL, frameData.viewport, &con);
+            }
+        }
 
         // swap OpenGL buffers (blocking call due to v-sync)
         glfwSwapBuffers(window);
 
         // process pending GUI events, call GLFW callbacks
         glfwPollEvents();
-
     }
 
     // free visualization storage

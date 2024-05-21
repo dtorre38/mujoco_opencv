@@ -1,14 +1,14 @@
-#include<stdbool.h> //for bool
-//#include<unistd.h> //for usleep
-//#include <math.h>
-
-#include <mujoco/mujoco.h>
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <iostream>
+#include <string>
 #include <GLFW/glfw3.h>
+#include <mujoco/mujoco.h>
+#include <opencv2/opencv.hpp>
+#include <cstdint>
 
-#include "../utils/get_frame.c"
+#include <opencv2/opencv.hpp>
+#include <cstdint>
+
+#include "../utils/get_frame.cpp"
 #include "../utils/render_insetwindow.c"
 
 // MuJoCo data structures

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+cmake .
+reset
+make clean
+make
+./main ../model/box_tracking.xml

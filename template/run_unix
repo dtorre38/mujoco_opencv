@@ -1,5 +1,5 @@
-#cmake .
+cmake .
 reset
 make clean
 make
-./main ../model/.xml
+./main ../model/robot.xml

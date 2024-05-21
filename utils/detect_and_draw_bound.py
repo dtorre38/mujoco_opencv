@@ -15,7 +15,7 @@ def detect_and_draw_bound(frame, width=640, height=480):
     # Reshape mujoco frame [height x width, 1] to 3D array for opencv input [height, width, 3]
     frame_reshaped = frame.reshape((height, width, 3))
 
-    # convert frame to BGR
+    # convert frame to BGR - I think it's already coming in as BGR for some reason
     frame_bgr = cv2.cvtColor(frame_reshaped, cv2.COLOR_RGB2BGR)
 
     # Convert frame to HSV (Hue, Saturation, Value) color space for easier color detection
@@ -59,15 +59,18 @@ def detect_and_draw_bound(frame, width=640, height=480):
     dy = frame_center_y - bb_center_y
     
     if debug_opencv:
-        dirname = os.path.dirname(__file__)
+        dirname = os.path.dirname(os.path.abspath(__file__))
+
+        # Get the parent directory of the current script's directory
+        parent_dir = os.path.dirname(dirname)
         
-        filename = os.path.join(dirname, 'test_hsvframe.png')
+        filename = os.path.join(parent_dir, 'images/test_hsvframe.png')
         cv2.imwrite(filename, cv2.flip(hsv_frame, -1))
 
-        filename = os.path.join(dirname, 'test_rgb_filtered.png')
+        filename = os.path.join(parent_dir, 'images/test_bgr_filtered.png')
         cv2.imwrite(filename, cv2.flip(frame_bgr, -1))
         
-        filename = os.path.join(dirname, 'test_filtered.png')
+        filename = os.path.join(parent_dir, 'images/test_filtered.png')
         cv2.imwrite(filename, cv2.flip(frame_bdbox, -1))
     
     return frame_boundbox, bounding_box, dx, dy

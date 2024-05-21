@@ -7,9 +7,11 @@
 #include "stdlib.h"
 #include "string.h"
 #include <GLFW/glfw3.h>
+#include <opencv2/opencv.hpp>
+#include <cstdint>
 
-#include "../utils/get_frame.c"
 #include "../utils/render_insetwindow.c"
+#include "../utils/render_insetwindow_depth.c"
 
 // MuJoCo data structures
 mjModel* m = NULL;                  // MuJoCo model
@@ -205,7 +207,8 @@ int main(int argc, const char** argv)
 
         int loc_x = viewport.width - frame_width;
         int loc_y = viewport.height - frame_height;
-        render_insetscreen(m, d, &opt, &scn, &con, "robot_camera", loc_x, loc_y, frame_width, frame_height);
+        // render_insetscreen(m, d, &opt, &scn, &con, "robot_camera", loc_x, loc_y, frame_width, frame_height);
+        render_insetscreen_depth(m, d, &opt, &scn, &con, "robot_camera", loc_x, loc_y, frame_width, frame_height);
 
         // swap OpenGL buffers (blocking call due to v-sync)
         glfwSwapBuffers(window);

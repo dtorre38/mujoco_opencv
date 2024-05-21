@@ -1,5 +1,10 @@
 <mujoco>
   <option gravity = "0 0 -9.81" />
+  <visual>
+    <quality offsamples="0"/>
+    <global offwidth="640" offheight="480"/>
+  </visual>
+
    <worldbody>
       <light diffuse="1 1 1" pos="0 0 20" dir="0 0 -1"/>
 			<geom type="plane" size="10 10 0.1" rgba=".9 0 0 1"/>

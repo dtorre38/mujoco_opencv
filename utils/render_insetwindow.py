@@ -32,11 +32,12 @@ def render_insetscreen(model, data, opt, scene, context, camera_name, loc_x, loc
     mj.mjv_updateScene(model, data, opt, None, offscreen_cam, mj.mjtCatBit.mjCAT_ALL.value, scene)
 
     # 3. Render the scene in the offscreen buffer with mjr_render.
-    pixels = np.zeros((height * width * 3, 1), dtype=np.uint8)  # Placeholder for pixel data
     mj.mjr_render(offscreen_viewport, scene, context)
+    
+    rgb = np.zeros((height * width * 3, 1), dtype=np.uint8)  # buffer for rgb data
 
     # 4. Read the pixels with mjr_readPixels.
-    mj.mjr_readPixels(pixels, None, offscreen_viewport, context)
+    mj.mjr_readPixels(rgb, None, offscreen_viewport, context)
 
     # 5. Call mjr_drawPixels using the rectangular viewport you created in step 1.
-    mj.mjr_drawPixels(pixels, None, offscreen_viewport, context)
+    mj.mjr_drawPixels(rgb, None, offscreen_viewport, context)

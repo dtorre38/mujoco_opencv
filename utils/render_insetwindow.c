@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 
-void render_insetscreen(mjModel* model, mjData* data, mjOption* opt, mjvScene* scene, mjrContext* context,
+void render_insetscreen(mjModel* model, mjData* data, mjvOption* opt, mjvScene* scene, mjrContext* context,
                         const char* camera_name, int loc_x, int loc_y,
                         int width, int height) 
 {
@@ -26,15 +26,15 @@ void render_insetscreen(mjModel* model, mjData* data, mjOption* opt, mjvScene* s
     mjv_updateScene(model, data, opt, NULL, &offscreen_cam, mjCAT_ALL, scene);
 
     // 3. Render the scene in the offscreen buffer mjr_render
-    unsigned char* pixels = (unsigned char*)malloc(height * width * 3 * sizeof(unsigned char));
+    unsigned char* rgb = (unsigned char*)malloc(height * width * 3 * sizeof(unsigned char));
     mjr_render(offscreen_viewport, scene, context);
 
     // 4. Read the pixels with mjr_readPixels
-    mjr_readPixels(pixels, NULL, offscreen_viewport, context);
+    mjr_readPixels(rgb, NULL, offscreen_viewport, context);
 
     // 5. Draw the pixels with mjr_drawPixels using the rectangular viewport
-    mjr_drawPixels(pixels, NULL, offscreen_viewport, context);
+    mjr_drawPixels(rgb, NULL, offscreen_viewport, context);
 
     // Free memory
-    free(pixels);
+    free(rgb);
 }
