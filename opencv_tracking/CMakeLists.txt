@@ -13,6 +13,7 @@ set(CMAKE_C_FLAGS "-w -Wno-implicit-function-declaration -target x86_64-apple-da
 # Find the required packages
 find_package(mujoco REQUIRED)
 find_package(glfw3 REQUIRED)
+find_package(OpenGL REQUIRED)
 find_package(GSL REQUIRED)
 find_package(OpenCV REQUIRED)
 
@@ -20,7 +21,7 @@ find_package(OpenCV REQUIRED)
 add_executable(main main.cpp) # must use cpp to run opencv
 
 # Link libraries to the main executable
-target_link_libraries(main mujoco::mujoco glfw GSL::gsl GSL::gslcblas m ${OpenCV_LIBS})
+target_link_libraries(main PRIVATE mujoco::mujoco glfw OpenGL::GL GSL::gsl GSL::gslcblas m ${OpenCV_LIBS})
 
 # Set the output directory for the executable to the parent directory of the build folder
 set_target_properties(main PROPERTIES

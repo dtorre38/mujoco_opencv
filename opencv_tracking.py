@@ -1,5 +1,6 @@
 import mujoco as mj
 from mujoco.glfw import glfw
+from OpenGL.GL import *
 import os
 
 import numpy as np
@@ -21,8 +22,8 @@ lastx = 0
 lasty = 0
 
 # inset screen width and height
-frame_width = 640
-frame_height = 480
+frame_width = 0.5 * 640
+frame_height = 0.5 * 480
 dx = 0  # frame center xpos - bounding box center xpos
 dy = 0  # frame center ypos - bounding box center ypos
 bounding_box = np.array([0, 0, 0, 0])  # [x, y, x+w, y+h]: bottom left and top right coordinates
@@ -202,6 +203,7 @@ while not glfw.window_should_close(window):
     frame_boundbox, bounding_box, dx, dy = detect_and_draw_bound(frame, width=frame_width, height=frame_height)
     
     # render bounding box on inset frame
+    glClear(GL_DEPTH_BUFFER_BIT)  # allows bounding box to render over geometries
     mj.mjr_drawPixels(frame_boundbox, None, offscreen_viewport, context)
     
     # swap OpenGL buffers (blocking call due to v-sync)

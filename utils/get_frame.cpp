@@ -1,7 +1,6 @@
-#include <mujoco/mujoco.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <cstring> // For memcpy
+#include <opencv2/opencv.hpp>
+#include <array>
+#include <iostream>
 
 #include "framedata.hpp"
 
@@ -17,54 +16,13 @@ void get_frame(mjModel* model, mjData* data, mjvOption* opt, mjvScene* scene, mj
     // 3. Render the scene in the offscreen buffer
     unsigned char* rgb = (unsigned char*)malloc(height * width * 3 * sizeof(unsigned char));
     float* depth = (float*)malloc(height * width * 1 * sizeof(float));
+    unsigned char* depth8 = (unsigned char*)malloc(height * width * 3 * sizeof(unsigned char));
     float* depthm = (float*)malloc(height * width * 1 * sizeof(float));
 
     mjr_render(offscreen_viewport, scene, context);
 
     // 4. Read the pixels
     mjr_readPixels(rgb, depth, offscreen_viewport, context);
-
-    // Allocate memory for the left and right images
-    // int half_width = width/2;
-    // unsigned char* left_rgb = (unsigned char*)malloc(height * half_width * 3 * sizeof(unsigned char));
-    // unsigned char* right_rgb = (unsigned char*)malloc(height * half_width * 3 * sizeof(unsigned char));
-    // float* left_depth = (float*)malloc(height * half_width * sizeof(float));
-    // float* right_depth = (float*)malloc(height * half_width * sizeof(float));
-
-    // // Iterate over each row
-    // for (int row = 0; row < height; ++row) {
-    //     // Copy left RGB image
-    //     memcpy(&left_rgb[row * half_width * 3], 
-    //            &rgb[row * width * 3], 
-    //            half_width * 3 * sizeof(unsigned char));
-        
-    //     // Copy right RGB image
-    //     memcpy(&right_rgb[row * half_width * 3], 
-    //            &rgb[row * width * 3 + half_width * 3], 
-    //            half_width * 3 * sizeof(unsigned char));
-        
-    //     // Copy left depth image
-    //     memcpy(&left_depth[row * half_width], 
-    //            &depth[row * width], 
-    //            half_width * sizeof(float));
-        
-    //     // Copy right depth image
-    //     memcpy(&right_depth[row * half_width], 
-    //            &depth[row * width + half_width], 
-    //            half_width * sizeof(float));
-    // }
-
-    // cv::Mat left(half_width, height, CV_8UC3, left_rgb);
-    // cv::cvtColor(left, left, cv::COLOR_BGR2RGB);
-    // cv::Mat left_flipped;
-    // cv::flip(left, left_flipped, 0);
-    // cv::imwrite("left.png", left_flipped);
-    
-    // cv::Mat right(half_width, height, CV_8UC3, right_rgb);
-    // cv::cvtColor(right, right, cv::COLOR_BGR2RGB);
-    // cv::Mat right_flipped;
-    // cv::flip(right, right_flipped, 0);
-    // cv::imwrite("right.png", right_flipped);
     
     // convert to meters
     float extent = model->stat.extent;
@@ -74,25 +32,20 @@ void get_frame(mjModel* model, mjData* data, mjvOption* opt, mjvScene* scene, mj
         depthm[i] = near / (1.0f - depth[i] * (1.0f - near/far));
     }
 
-    // Convert your 1D array to a 2D cv::Mat
-    cv::Mat depth_2d(height, width, CV_32F, depth);
-
-    // Normalize the depth array to fit within the 8-bit range (0-255)
-    cv::Mat normalized_depth;
-    cv::normalize(depth_2d, normalized_depth, 0, 255, cv::NORM_MINMAX, CV_8UC1);
-
-    // Flip the image vertically and horizontally
-    cv::Mat depth_image_flipped;
-    cv::flip(normalized_depth, depth_image_flipped, 0); // -1 indicates flipping both axes
-
-    // Save the image
-    // cv::imwrite("get_frame_depth.jpg", depth_image_flipped);
-
-    // convert to a 3-channel 8-bit image
-    unsigned char* depth8 = (unsigned char*)malloc(height * width * 3 * sizeof(unsigned char));
-    for (int i=0; i< height * width; i++) {
-        depth8[3*i] = depth8[3*i+1] = depth8[3*i+2] = depth[i];
+    // Normalize depth to fit within 8-bit range
+    float min_depth = FLT_MAX;
+    float max_depth = -FLT_MAX;
+    for (int i = 0; i < height * width; i++) {
+        if (depth[i] < min_depth) min_depth = depth[i];
+        if (depth[i] > max_depth) max_depth = depth[i];
     }
+
+    float range = max_depth - min_depth;
+    for (int i = 0; i < height * width; i++) {
+        depth8[3 * i] = depth8[3 * i + 1] = depth8[3 * i + 2] = (unsigned char)((depth[i] - min_depth) / range * 255.0f);
+    }
+
+    // mjr_drawPixels(depth8, NULL, offscreen_viewport, context);
 
     // Package the data
     frameData.rgb = rgb;

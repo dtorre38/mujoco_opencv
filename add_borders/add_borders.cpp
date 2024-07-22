@@ -4,6 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 
+
 void drawBorders(cv::Mat& image) {
     int width = image.cols;
     int height = image.rows;

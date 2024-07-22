@@ -17,6 +17,7 @@
         "__node_handle": "cpp",
         "queue": "cpp",
         "unordered_map": "cpp",
-        "complex": "cpp"
+        "complex": "cpp",
+        "render_insetwindow.c": "cpp"
     }
 }

@@ -47,7 +47,7 @@ void detect_and_draw_bound(BoundingBox& result) {
         }
     }
     
-    cv::cvtColor(rgbFrame, rgbFrame, cv::COLOR_BGR2RGB);
+    // cv::cvtColor(rgbFrame, rgbFrame, cv::COLOR_BGR2RGB);
     result.rgbFrame = rgbFrame;
 
     result.boundingBox = {maxRect.x, maxRect.y, maxRect.x + maxRect.width, maxRect.y + maxRect.height};
@@ -58,20 +58,20 @@ void detect_and_draw_bound(BoundingBox& result) {
 
     // Debugging: Save images for verification
     if (debug_opencv) {
-        // cv::Mat rgb_flipped;
-        // cv::flip(rgbFrame, rgb_flipped, -1);
-        // cv::imwrite("frame_rgb.png", rgb_flipped);
+        cv::Mat rgb_flipped;
+        cv::flip(rgbFrame, rgb_flipped, -1);
+        cv::imwrite("images/frame_rgb.png", rgb_flipped);
 
-        // cv::Mat bgr_flipped;
-        // cv::flip(bgrFrame, bgr_flipped, -1);
-        // cv::imwrite("frame_bgr.png", bgr_flipped);
+        cv::Mat bgr_flipped;
+        cv::flip(bgrFrame, bgr_flipped, -1);
+        cv::imwrite("images/frame_bgr.png", bgr_flipped);
 
-        // cv::Mat hsv_flipped;
-        // cv::flip(hsvFrame, hsv_flipped, -1);
-        // cv::imwrite("frame_hsv.png", hsv_flipped);
+        cv::Mat hsv_flipped;
+        cv::flip(hsvFrame, hsv_flipped, -1);
+        cv::imwrite("images/frame_hsv.png", hsv_flipped);
 
         cv::Mat result_flipped;
         cv::flip(result.rgbFrame, result_flipped, -1);
-        cv::imwrite("frame_boundbox.png", result_flipped);
+        cv::imwrite("images/frame_boundbox.png", result_flipped);
     }
 }

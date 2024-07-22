@@ -15,3 +15,8 @@ add_executable(add_borders add_borders.cpp)
 
 # Link OpenCV libraries
 target_link_libraries(add_borders ${OpenCV_LIBS})
+
+# Set the output directory for the executable to the parent directory of the build folder
+set_target_properties(add_borders PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/.."
+)

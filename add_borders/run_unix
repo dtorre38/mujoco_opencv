@@ -1,10 +1,23 @@
 #!/bin/bash
 
+# Define the project root directory relative to this script location
+PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+# Change into the build directory
+cd "${PROJECT_ROOT}/build" || exit
+
 # Configure the project where source is in the parent directory
-cmake .
+cmake ..
+
+# Clean and build the project
+# Note: Using cmake --build allows for a more portable script across different platforms and generators
+# cmake --build . --target clean
 
 make clean
 make
+
+# Return to the project root directory to run the executable
+cd ..
 
 # Execute the main program
 ./add_borders ../model/asset/5x5_1000-0.png

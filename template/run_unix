@@ -1,5 +1,0 @@
-cmake .
-reset
-make clean
-make
-./main ../model/robot.xml

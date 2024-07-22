@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <mujoco/mujoco.h>
 #include <opencv2/opencv.hpp>
@@ -46,8 +47,8 @@ mjtNum last_update = 0.0;
 mjtNum ctrl;
 
 // inset screen width and height
-int frame_width = 640;
-int frame_height = 480;
+int frame_width = 0.5 * 640;
+int frame_height = 0.5 * 480;
 
 
 // keyboard callback
@@ -254,24 +255,16 @@ int main(int argc, char** argv) {
         get_frame(m, d, &opt, &scn, &con, &robot_cam, frameData, loc_x, loc_y, frame_width, frame_height);
         
         // Reshape mujoco frame [height x width, 1] to 3D array for opencv input [height, width, 3]
-        cv::Mat frame_bgr = cv::Mat(frame_height, frame_width, CV_8UC3, frameData.rgb); // maps to bgr image
+        cv::Mat frame_rgb = cv::Mat(frame_height, frame_width, CV_8UC3, frameData.rgb);
         cv::Mat frame_depth = cv::Mat(frame_height, frame_width, CV_32F, frameData.depth);
         cv::Mat frame_depth8 = cv::Mat(frame_height, frame_width, CV_8UC3, frameData.depth8);
 
-        result.rgbFrame = frame_bgr;
+        result.rgbFrame = frame_rgb;
         result.depthFrame = frame_depth;
         result.depth8Frame = frame_depth8;
 
-        // cv::Mat cameraMatrix = generateCameraMatrix(m, frame_width, frame_height);
-        // // Output the camera matrix
-        // std::cout << "Camera Matrix:" << std::endl;
-        // std::cout << cameraMatrix << std::endl;
-
         // aruco tracking
-        aruco_tracking(result, m);
-
-        // Draw bounding box on frame
-        // detect_and_draw_bound(result);
+        aruco_tracking(result, m, &con, "robot_camera");
         
         if (!result.rgbFrame.empty()) {
             cv::Mat rgbFrame;
@@ -281,6 +274,7 @@ int main(int argc, char** argv) {
             if (!rgbFrame.isContinuous()) {
                 rgbFrame = result.rgbFrame;
                 depthFrame = result.depthFrame;
+                glClear(GL_DEPTH_BUFFER_BIT);
                 mjr_drawPixels(rgbFrame.data, NULL, frameData.viewport, &con);
                 // mjr_drawPixels(frame_depth8.data, NULL, frameData.viewport, &con);
             }
@@ -303,52 +297,8 @@ int main(int argc, char** argv) {
         end = clock();
         cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 
-        // char* body_name;
-        // int bodyid;
-        // mjOBJ_BODY,                     // body
-        // mjOBJ_XBODY,                    // body, used to access regular frame instead of i-frame
-
-        const char* robot_name = "robot";
-        int robot_bodyid = mj_name2id(m, mjOBJ_BODY, robot_name);
-        // printf("robot pos (x, y): %f, %f \n", d->xpos[3*robot_bodyid + 0], d->xpos[3*robot_bodyid + 1]);
-
-        const char* body_name = "obstacle1";
-        int obstacle1_bodyid = mj_name2id(m, mjOBJ_BODY, body_name);
-        // printf("obstacle pos (x, y): %f, %f \n", d->xpos[3*obstacle1_bodyid + 0], d->xpos[3*obstacle1_bodyid + 1]);
-        
-        // Get the quaternion representing the rotation of the rotating cube
-        const double* quat = &d->cvel[3 * robot_bodyid]; // Assuming 'cvel' contains quaternion velocities, adjust as needed
-
-        // Convert quaternion to rotation matrix
-        double rotation_matrix[9]; // Flattened 1D array to hold the rotation matrix
-        mju_quat2Mat(rotation_matrix, quat); // Fill the rotation matrix
-
-        // Define the reference point on the robot (+x side face) in robot's local coordinates
-        double ref_point_robot_local[3] = {1.0, 0.0, 0.0}; // Assuming the reference point is 1 unit along the x-axis from the origin
-
-        // Transform the reference point from robot's local coordinates to world coordinates
-        double ref_point_robot_world[3];
-        mju_rotVecMat(ref_point_robot_world, ref_point_robot_local, rotation_matrix); // Rotate the reference point by the rotation matrix
-
-        // Calculate the position of the reference point in world coordinates
-        double ref_point_robot_pos[3];
-        mju_add3(ref_point_robot_pos, &d->xpos[3 * robot_bodyid], ref_point_robot_world); // Add the rotated reference point to the robot's position
-
-        // Calculate the relative position vector between the reference point on the robot and the center of the translating obstacle
-        double dx_world = ref_point_robot_pos[0] - d->xpos[3 * obstacle1_bodyid + 0];
-        double dy_world = ref_point_robot_pos[1] - d->xpos[3 * obstacle1_bodyid + 1];
-
-        // Consider cube sizes
-        double cube_size_offset = 0.5;
-        double x_relative_world = dx_world + cube_size_offset;
-        double y_relative_world = dy_world + cube_size_offset;
-
-        // Calculate the distance in world coordinates (Euclidean distance in this example)
-        result.mujoco_distance = sqrt(pow(x_relative_world, 2) + pow(y_relative_world, 2));
+        aruco_error(result, m, d);
         double dist_error = abs(result.mujoco_distance - result.aruco_distance);
-
-        
-        printf("Marker ID: %d, MuJoCo Distance: %0.2f meters, Aruco Distance: %0.2f meters, Error: %0.2f \n", result.id, result.mujoco_distance, result.aruco_distance, dist_error);
 
         // swap OpenGL buffers (blocking call due to v-sync)
         glfwSwapBuffers(window);
@@ -365,8 +315,6 @@ int main(int argc, char** argv) {
         avg_time = cum_time / count;
         printf("Avg fun() time = %f seconds \n", avg_time);
     }
-
-
 
     // free visualization storage
     mjv_freeScene(&scn);

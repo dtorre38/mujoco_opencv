@@ -176,10 +176,10 @@ while not glfw.window_should_close(window):
     mj.mjr_render(viewport, scene, context)
 
     # set second screen on upper right
-    width = 640
-    height = 480
+    width = 0.5 * 640
+    height = 0.5 * 480
     render_insetscreen(model, data, opt, scene, context, 'robot_camera', loc_x=viewport_width - width, loc_y=viewport_height - height, width=width,
-                       height=height)
+                       height=height, depth_flag=1)
 
     # swap OpenGL buffers (blocking call due to v-sync)
     glfw.swap_buffers(window)

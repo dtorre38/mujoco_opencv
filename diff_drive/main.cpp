@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <mujoco/mujoco.h>
 #include <opencv2/opencv.hpp>
@@ -40,8 +41,8 @@ mjtNum last_update = 0.0;
 mjtNum ctrl;
 
 // inset screen width and height
-int frame_width = 640;
-int frame_height = 480;
+int frame_width = 0.5 * 640;
+int frame_height = 0.5 * 480;
 
 
 // keyboard callback
@@ -161,12 +162,12 @@ int main(int argc, char** argv) {
     glfwSetScrollCallback(window, scroll);
 
     double arr_view[] = {90, -30, 10, 0.0, 0.0, 1.25};
-     cam.azimuth = arr_view[0];
-     cam.elevation = arr_view[1];
-     cam.distance = arr_view[2];
-     cam.lookat[0] = arr_view[3];
-     cam.lookat[1] = arr_view[4];
-     cam.lookat[2] = arr_view[5];
+    cam.azimuth = arr_view[0];
+    cam.elevation = arr_view[1];
+    cam.distance = arr_view[2];
+    cam.lookat[0] = arr_view[3];
+    cam.lookat[1] = arr_view[4];
+    cam.lookat[2] = arr_view[5];
 
     //  d->qpos[0]=1.57; // pi/2
 
@@ -226,17 +227,19 @@ int main(int argc, char** argv) {
         get_frame(m, d, &opt, &scn, &con, &robot_cam, frameData, loc_x, loc_y, frame_width, frame_height);
 
         // Reshape mujoco frame [height x width, 1] to 3D array for opencv input [height, width, 3]
-        cv::Mat frame_rgb = cv::Mat(frame_height, frame_width, CV_8UC3, frameData.pixels);
+        cv::Mat frame_rgb = cv::Mat(frame_height, frame_width, CV_8UC3, frameData.rgb);
+        result.rgbFrame = frame_rgb;
 
         // Draw bounding box on frame
-        detect_and_draw_bound(result, frame_rgb, frame_width, frame_height);
+        detect_and_draw_bound(result);
         
-        if (!result.frame.empty()) {
+        if (!result.rgbFrame.empty()) {
             cv::Mat rgbFrame;
 
             // Ensure data is contiguous before using it
             if (!rgbFrame.isContinuous()) {
-                rgbFrame = result.frame;
+                rgbFrame = result.rgbFrame;
+                glClear(GL_DEPTH_BUFFER_BIT);
                 mjr_drawPixels(rgbFrame.data, NULL, frameData.viewport, &con);
             }
         }

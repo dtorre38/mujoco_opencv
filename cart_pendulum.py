@@ -3,9 +3,9 @@ from mujoco.glfw import glfw
 import numpy as np
 import os
 import control
+from sympy import true
 
 from utils.render_insetwindow import render_insetscreen
-from utils.render_insetwindow_depth import render_insetscreen_depth
 
 xml_path = 'model/cart_pendulum.xml'  # xml file (assumes this is in the same folder as this file)
 simend = 100  # simulation time
@@ -263,12 +263,10 @@ while not glfw.window_should_close(window):
     mj.mjr_render(viewport, scene, context)
 
     # set second screen on upper right
-    width = 640
-    height = 480
+    width = 0.5 * 640
+    height = 0.5 * 480
     render_insetscreen(model, data, opt, scene, context, 'robot_camera', loc_x=viewport_width - width, loc_y=viewport_height - height, width=width,
-                       height=height)
-    # render_insetscreen_depth(model, data, opt, scene, context, 'robot_camera', loc_x=viewport_width - width, loc_y=viewport_height - height, width=width,
-    #                    height=height)
+                       height=height, depth_flag=true)
 
     # swap OpenGL buffers (blocking call due to v-sync)
     glfw.swap_buffers(window)

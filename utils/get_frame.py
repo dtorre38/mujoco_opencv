@@ -16,6 +16,8 @@ def get_frame(model, data, opt, scene, context, camera_name, loc_x, loc_y, width
     # top middle: loc_x = 0.5*(viewport_width - width), loc_y = viewport_height - height
     # top right: loc_x = viewport_width - width, loc_y = viewport_height - height
     
+    height = int(height)
+    width = int(width)
     # Adding an inset window from a different perspective
     # https://github.com/google-deepmind/mujoco/issues/744#issuecomment-1442221178
     # 1. Create a rectangular viewport in the upper right corner for example.
@@ -39,6 +41,7 @@ def get_frame(model, data, opt, scene, context, camera_name, loc_x, loc_y, width
     mj.mjr_readPixels(frame, None, offscreen_viewport, context)
     
     # 5. Call mjr_drawPixels using the rectangular viewport you created in step 1.
+    # glClear(GL_DEPTH_BUFFER_BIT)  # allows rendering over geometries
     # mj.mjr_drawPixels(frame, None, offscreen_viewport, context)
     
     return frame, offscreen_viewport

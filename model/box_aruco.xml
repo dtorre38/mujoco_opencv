@@ -17,7 +17,8 @@
       <body name="robot" pos="0 0 0.5" euler="0 0 0">
         <joint name="robot_joint" type="hinge" axis = "0 0 1" pos = "0 0 -0.5"/>
 				<geom type="box" size=".5 .5 .5" rgba="1 1 1 1" mass="10"/>
-        <camera name="robot_camera" pos="0.5 0 0" fovy="112.35" resolution="928 800" euler="0 -90 270"/>
+        <camera name="robot_camera" pos="0.5 0 0" euler="0 -90 270"/>
+        <!-- <camera name="robot_camera" pos="0.5 0 0" fovy="112.35" resolution="928 800" euler="0 -90 270"/> -->
         
         <!-- From depthCamera.dae https://github.com/unitreerobotics/unitree_ros/blob/6a7a9609cebd853062f2182f97dcfbdb711cd61a/robots/go1_description/meshes/depthCamera.dae#L56 -->
         <!-- <xfov sid="xfov">39.59775</xfov>

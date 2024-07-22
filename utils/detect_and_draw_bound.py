@@ -9,6 +9,9 @@ debug_opencv = 0  # set to 1 for saving opencv images for debugging purposes
 def detect_and_draw_bound(frame, width=640, height=480):
     global bounding_box, dx, dy
     
+    height = int(height)
+    width = int(width)
+    
     # Initialize bounding box coordinates with default values
     x, y, w, h = 0, 0, 0, 0
     

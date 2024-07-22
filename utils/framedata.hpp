@@ -13,6 +13,30 @@ struct FrameData {
     int width;
     int height;
 
+    // camera intrinsics
+    double fx;
+    double fy;
+    double cx;
+    double cy;
+
+    cv::Mat rgbFrame;
+
+    cv::Mat depthm8Frame;
+    
+    cv::Mat depthFrame;
+    cv::Mat depth8Frame;
+    cv::Mat boundingboxdepth;
+
+    cv::Mat udepthmap;
+    cv::Mat udepthmap8;
+    cv::Mat binaryudepthmap8;
+    cv::Mat boundingboxudepth8;
+
+    cv::Mat vdepthmap;
+    cv::Mat vdepthmap8;
+    cv::Mat binaryvdepthmap8;
+    cv::Mat boundingboxvdepth8;
+
     double mujoco_distance;
     int id;
     double aruco_distance;
