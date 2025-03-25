@@ -6,7 +6,11 @@
  </option >
  <visual>
      <headlight ambient="0.5 0.5 0.5"/>
+     <global offwidth="640" offheight="480"/>
  </visual>
+ <default>
+  <camera fovy="73.74"/>
+</default>
    <worldbody>
       <geom name = "plane" type="plane" size="10 10 0.1" rgba="0.9 0.9 0.9 1"/>
       <body name="chassis" pos="0 0 0.5" euler = "0 0 0">
@@ -25,7 +29,7 @@
        </body>
      </body>
      <body name='obstacle1' pos="3 0 0.5" euler="0 0 0">
-      <joint name='joint1' type='slide' axis='0 1 0' pos = '0 0 0'/>
+      <joint name='joint1' type='slide' axis='1 0 0' pos = '0 0 0'/>
       <geom type="box" size=".5 .5 .5" rgba="1 1 0.1 1" mass="100"/>
       <camera name="obstacle_camera1" pos="0 0 1" zaxis="0 0 1"/>
     </body>

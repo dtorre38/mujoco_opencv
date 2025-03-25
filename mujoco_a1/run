@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Define the project root directory
+PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+# Create the build directory if it doesn't exist
+mkdir -p "${PROJECT_ROOT}/build"
+cd "${PROJECT_ROOT}/build" || exit 1
+
+# Run CMake to configure the project
+cmake .. || { echo "CMake configuration failed!"; exit 1; }
+
+# Build the project
+make || { echo "Build failed!"; exit 1; }
+
+# Go back to the project root
+cd "${PROJECT_ROOT}" || exit 1
+
+# Execute the main program
+./build/main ../model/box_tracking.xml
+
+# Uncomment to debug the main program using lldb
+# lldb ./build/main -- ../model/box_tracking.xml

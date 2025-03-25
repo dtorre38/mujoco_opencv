@@ -1,6 +1,0 @@
-Wed Feb 21 10:39:26 2024
-ERROR: Maximum number of textures is 1000
-
-Tue Mar  5 21:15:23 2024
-WARNING: mju_openResource: unknown file '../../model/box.xml'
-

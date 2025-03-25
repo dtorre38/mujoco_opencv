@@ -10,10 +10,19 @@ struct FrameData {
     float* depthm;
     unsigned char* depth8;
     mjrRect viewport;
+    int FOV;
     int width;
     int height;
 
+    // envstate
+    float obstacle_pos[100][5];  // [x, y, z, r, intetionally_left_blank]
+    float envstate_depthm[91]; // depth in meters
+    float depth_cart[91][2];  // [depth_x_cart, depth_y_cart]
+
     // camera intrinsics
+    double fovy;
+    double fovx;
+
     double fx;
     double fy;
     double cx;

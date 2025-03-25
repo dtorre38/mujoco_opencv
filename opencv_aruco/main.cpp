@@ -297,7 +297,7 @@ int main(int argc, char** argv) {
         end = clock();
         cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 
-        aruco_error(result, m, d);
+        aruco_error(result, m, d, 1);
         double dist_error = abs(result.mujoco_distance - result.aruco_distance);
 
         // swap OpenGL buffers (blocking call due to v-sync)

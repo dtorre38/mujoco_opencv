@@ -9,11 +9,12 @@ void drawBorders(cv::Mat& image) {
     int width = image.cols;
     int height = image.rows;
 
-    int nTiles = 8;
-    int padding = 3;
-    int cornerLength = 4;
-    int dx = width / nTiles;
-    int dy = height / nTiles;
+    // Parameters for the border
+    int nTiles = 8;            // Number of tiles
+    int padding = 3;           // Padding in tiles
+    int cornerLength = 4;      // Length of the corner in tiles
+    int dx = width / nTiles;   // Width of each tile
+    int dy = height / nTiles;  // Height of each tile
 
     printf("height = %d; width = %d \n", height, width);
     printf("dx = %d; dy = %d \n", dx, dy);
@@ -55,7 +56,8 @@ int main(int argc, char** argv) {
 
     drawBorders(image);
 
-    std::string outputImagePath = "output_with_borders.png";
+    // std::string outputImagePath = "output_with_borders.png";
+    std::string outputImagePath = "marker23.png";
     cv::imwrite(outputImagePath, image);
 
     std::cout << "Output image saved as " << outputImagePath << std::endl;

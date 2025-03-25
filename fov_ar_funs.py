@@ -42,17 +42,20 @@ def aspect_ratio_from_pixels(width, height):
     return round(aspect_ratio, 2)
 
 # Example usage - VFOV -> HFOV
-horizontal_fov_deg = math.degrees(2.094)  # Horizontal field of view in degrees
-aspect_ratio =  928/800   # Aspect ratio (width / height)
+horizontal_fov_deg = 90  # Horizontal field of view in degrees
+aspect_ratio =  640/480   # Aspect ratio (width / height)
 
 vertical_fov_deg = vertical_fov_from_horizontal(horizontal_fov_deg, aspect_ratio)
-print(f"Vertical FoV: {vertical_fov_deg} degrees")
+print(f"Horizontal FoV: {horizontal_fov_deg} degrees")
+print(f"Vertical FoV: {vertical_fov_deg} degrees\n")
 
 # Example usage - HFOV -> VFOV
-aspect_ratio =  928/800   # Aspect ratio (width / height)
+# vertical_fov_deg = 90
+aspect_ratio =  640/480   # Aspect ratio (width / height)
 
 horizontal_fov_deg = horizontal_fov_from_vertical(vertical_fov_deg, aspect_ratio)
-print(f"Horizontal FoV: {horizontal_fov_deg} degrees")
+print(f"Vertical FoV: {vertical_fov_deg} degrees")
+print(f"Horizontal FoV: {horizontal_fov_deg} degrees\n")
 
 # Example: HFOV & VFOV to AR
 horizontal_fov_deg = 120
@@ -62,6 +65,8 @@ aspect_ratio = aspect_ratio_from_fovs(horizontal_fov_deg, vertical_fov_deg)
 print(f"Aspect Ratio: {aspect_ratio}")
 
 # Example: Pixel width and height -> AR
+width = 928
+height = 800
 width = 928
 height = 800
 aspect_ratio = aspect_ratio_from_pixels(width, height)

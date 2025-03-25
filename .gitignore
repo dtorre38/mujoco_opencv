@@ -49,3 +49,6 @@ CMakeTmp/
 # Ignore CMake generated files
 cmake_install.cmake
 CMakeLists.txt.user
+
+# Ignore Visual Studio files
+.vscode/

@@ -8,11 +8,9 @@
 
 #include "../utils/render_insetwindow.c"
 #include "../utils/get_frame.cpp"
-#include "../utils/detect_and_draw_bound.cpp"
-#include "../utils/aruco_tracking.cpp"
-#include "../utils/disparity.cpp"
 #include "../utils/framedata.hpp"
 #include "../utils/boundingbox.hpp"
+#include "create_disparity_map.cpp"
 
 #include "include/StereoCameraCommon2.hpp"
 
@@ -229,15 +227,35 @@ int main(int argc, char** argv) {
 
         int loc_x = viewport.width - frame_width;
         int loc_y = viewport.height - frame_height;
-        // render_insetscreen(m, d, &opt, &scn, &con, "robot_camera", loc_x, loc_y, frame_width, frame_height);
         
         FrameData frameData(frame_width, frame_height);
         get_frame(m, d, &opt, &scn, &con, &robot_cam, frameData, loc_x, loc_y, frame_width, frame_height);
 
         // Convert BGR to RGB
         cv::Mat bgrImage(frame_height, frame_width, CV_8UC3, frameData.rgb);
+        // cv::flip(bgrImage, bgrImage, 0);
         cv::Mat frame_rgb;
         cv::cvtColor(bgrImage, frame_rgb, cv::COLOR_BGR2RGB);
+
+        cv::Mat disparity_map;
+        create_disparity_map(frame_rgb, disparity_map, frame_width, frame_height);
+
+        // save frame_rgb
+        // cv::Mat frame_rgb_flip;
+        // cv::flip(frame_rgb, frame_rgb_flip, 0);
+        // cv::imwrite("data/stereo.png", frame_rgb_flip);
+
+        // // extract left and right from stereo image
+        // cv::Mat left_img = frame_rgb(cv::Rect(0, 0, frame_width/2, frame_height));
+        // cv::Mat right_img = frame_rgb(cv::Rect(frame_width/2, 0, frame_width/2, frame_height));
+
+        // // flip and save images
+        // cv::Mat left_img_flip;
+        // cv::Mat right_img_flip;
+        // cv::flip(left_img, left_img_flip, 0);
+        // cv::flip(right_img, right_img_flip, 0);
+        // cv::imwrite("data/left_img.png", left_img_flip);
+        // cv::imwrite("data/right_img.png", right_img_flip);
 
         // Reshape mujoco frame [height x width, 1] to 3D array for opencv input [height, width, 3]
         // cv::Mat frame_bgr = cv::Mat(frame_height, frame_width, CV_8UC3, frameData.rgb); // maps to bgr image
@@ -248,7 +266,18 @@ int main(int argc, char** argv) {
         result.depthFrame = frame_depth;
         result.depth8Frame = frame_depth8;
 
-        disparity();
+        // get disparity
+        // cv::Mat imgL = cv::imread("data/left_img.png", cv::IMREAD_GRAYSCALE);
+        // cv::Mat imgR = cv::imread("data/right_img.png", cv::IMREAD_GRAYSCALE);
+        
+        // cv::Ptr<cv::StereoBM> stereo = cv::StereoBM::create(16, 11);
+        // cv::Mat disparity;
+        // stereo->compute(imgL, imgR, disparity);
+
+        // // flip and save disparity image
+        // cv::Mat disparity_flip;
+        // cv::flip(disparity, disparity_flip, 0);
+        // cv::imwrite("data/disparity.png", disparity_flip);
         
         if (!result.rgbFrame.empty()) {
             cv::Mat rgbFrame;
@@ -258,8 +287,13 @@ int main(int argc, char** argv) {
             if (!rgbFrame.isContinuous()) {
                 rgbFrame = result.rgbFrame;
                 depthFrame = result.depthFrame;
+            
                 glClear(GL_DEPTH_BUFFER_BIT);
+                
+                // visualize rgb frame
                 mjr_drawPixels(rgbFrame.data, NULL, frameData.viewport, &con);
+
+                // visualize depth map
                 // mjr_drawPixels(frame_depth8.data, NULL, frameData.viewport, &con);
             }
         }

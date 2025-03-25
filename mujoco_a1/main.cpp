@@ -146,8 +146,8 @@ int main(int argc, char** argv) {
     }
 
     // create window, make OpenGL context current, request v-sync
-    int viewport_width = 900;
-    int viewport_height = 600;
+    int viewport_width = 1200;
+    int viewport_height = 900;
     GLFWwindow* window = glfwCreateWindow(viewport_width, viewport_height, "Demo", NULL, NULL);
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
@@ -167,16 +167,12 @@ int main(int argc, char** argv) {
     glfwSetScrollCallback(window, scroll);
 
     double arr_view[] = {90, -30, 10, 0.0, 0.0, 1.25};
-     cam.azimuth = arr_view[0];
-     cam.elevation = arr_view[1];
-     cam.distance = arr_view[2];
-     cam.lookat[0] = arr_view[3];
-     cam.lookat[1] = arr_view[4];
-     cam.lookat[2] = arr_view[5];
-
-    //  d->qpos[0]=1.57; // pi/2
-
-    // mjcb_control = mycontroller(m, d, result);
+    cam.azimuth = arr_view[0];
+    cam.elevation = arr_view[1];
+    cam.distance = arr_view[2];
+    cam.lookat[0] = arr_view[3];
+    cam.lookat[1] = arr_view[4];
+    cam.lookat[2] = arr_view[5];
 
     // initialize robot perspective camera
     mjvCamera robot_cam;
@@ -203,8 +199,6 @@ int main(int argc, char** argv) {
         mjtNum simstart = d->time;
         while( d->time - simstart < 1.0/60.0 )
         {
-            // mj_step(m, d);
-            // mycontroller(m, d, result);
 
             mj_step(m, d);
 

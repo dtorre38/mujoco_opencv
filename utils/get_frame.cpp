@@ -6,7 +6,7 @@
 
 
 void get_frame(mjModel* model, mjData* data, mjvOption* opt, mjvScene* scene, mjrContext* context, mjvCamera* cam, 
-               FrameData& frameData, int loc_x, int loc_y, int width, int height) {
+    FrameData& frameData, int loc_x, int loc_y, int width, int height) {
     // 1. Create a rectangular viewport
     mjrRect offscreen_viewport = {loc_x, loc_y, width, height};
 
@@ -23,26 +23,26 @@ void get_frame(mjModel* model, mjData* data, mjvOption* opt, mjvScene* scene, mj
 
     // 4. Read the pixels
     mjr_readPixels(rgb, depth, offscreen_viewport, context);
-    
+
     // convert to meters
     float extent = model->stat.extent;
     float near = model->vis.map.znear * extent;
     float far = model->vis.map.zfar * extent;
     for (int i=0; i< height * width; ++i) {
-        depthm[i] = near / (1.0f - depth[i] * (1.0f - near/far));
+    depthm[i] = near / (1.0f - depth[i] * (1.0f - near/far));
     }
 
     // Normalize depth to fit within 8-bit range
     float min_depth = FLT_MAX;
     float max_depth = -FLT_MAX;
     for (int i = 0; i < height * width; i++) {
-        if (depth[i] < min_depth) min_depth = depth[i];
-        if (depth[i] > max_depth) max_depth = depth[i];
+    if (depth[i] < min_depth) min_depth = depth[i];
+    if (depth[i] > max_depth) max_depth = depth[i];
     }
 
     float range = max_depth - min_depth;
     for (int i = 0; i < height * width; i++) {
-        depth8[3 * i] = depth8[3 * i + 1] = depth8[3 * i + 2] = (unsigned char)((depth[i] - min_depth) / range * 255.0f);
+    depth8[3 * i] = depth8[3 * i + 1] = depth8[3 * i + 2] = (unsigned char)((depth[i] - min_depth) / range * 255.0f);
     }
 
     // mjr_drawPixels(depth8, NULL, offscreen_viewport, context);
